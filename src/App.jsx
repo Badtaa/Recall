@@ -439,14 +439,24 @@ async function askForCards(source, part, existing) {
 /*  Shared bits                                                        */
 /* ------------------------------------------------------------------ */
 
-function TopBar({ left, right, onQuit }) {
+function PageHead({ eyebrow, title, sub }) {
+  return (
+    <div className="pagehead">
+      {eyebrow && <div className="eyebrow">{eyebrow}</div>}
+      <div className="pagetitle">{title}</div>
+      {sub && <div className="pagesub">{sub}</div>}
+    </div>
+  );
+}
+
+function TopBar({ left, right, onQuit, label }) {
   return (
     <div className="flex items-center justify-between gap-3 mb-4">
       <div className="text-sm dim">{left}</div>
       <div className="flex items-center gap-3">
         <div className="text-sm">{right}</div>
         <button onClick={onQuit} className="btn rounded-lg px-3 py-1 text-sm">
-          End round
+          {label || "End round"}
         </button>
       </div>
     </div>
@@ -1025,7 +1035,7 @@ function Drift({ cards, onQuit }) {
 
   return (
     <div className="driftbg rounded-2xl p-5" style={{ minHeight: "70vh" }}>
-      <TopBar left={`${i + 1} of ${cards.length} · hands free`} right={<span className="dim text-sm">{pace.name}</span>} onQuit={onQuit} />
+      <TopBar label="Back" left={`${i + 1} of ${cards.length} · hands free`} right={<span className="dim text-sm">{pace.name}</span>} onQuit={onQuit} />
       <button onClick={step} className="w-full text-center flex items-center justify-center" style={{ minHeight: "42vh" }}>
         <span style={{ maxWidth: "34ch" }}>
           <span className="drifttext block" style={{ fontSize: showDef ? "clamp(20px,3.2vw,30px)" : "clamp(30px,6vw,58px)", lineHeight: 1.2 }}>
@@ -1061,7 +1071,7 @@ function Drift({ cards, onQuit }) {
 /*  Lounge: Browse                                                     */
 /* ------------------------------------------------------------------ */
 
-function Browse({ deck, prog, onFlag, onQuit }) {
+function Browse({ deck, prog, onFlag, onSettings, onQuit }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(null);
   const [deep, setDeep] = useState({});
@@ -1096,7 +1106,8 @@ function Browse({ deck, prog, onFlag, onQuit }) {
 
   return (
     <div>
-      <TopBar left={`${deck.cards.length} cards`} right={<span className="dim text-sm">{list.length} shown</span>} onQuit={onQuit} />
+      <AIBanner what="Explaining a card" onConnect={onSettings} />
+      <TopBar label="Back" left={`${deck.cards.length} cards`} right={<span className="dim text-sm">{list.length} shown</span>} onQuit={onQuit} />
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -1123,7 +1134,7 @@ function Browse({ deck, prog, onFlag, onQuit }) {
               {isOpen && (
                 <div className="mt-3">
                   {deep[c.t] ? (
-                    <div className="panel2 rounded-lg p-3" style={{ fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{deep[c.t]}</div>
+                    <div className="panel2 rounded-lg p-3"><RichText size={14}>{deep[c.t]}</RichText></div>
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       <button onClick={() => explain(c)} className="btn rounded-lg px-3 py-1 text-sm" disabled={loading === c.t}>
@@ -1159,7 +1170,7 @@ const STARTERS = [
   "Walk me through this material in 10 sentences",
 ];
 
-function Tutor({ deck, onAsk, onQuit }) {
+function Tutor({ deck, onAsk, onSettings, onQuit }) {
   const [msgs, setMsgs] = useState([]);
   const [val, setVal] = useState("");
   const [busy, setBusy] = useState(false);
@@ -1200,7 +1211,8 @@ function Tutor({ deck, onAsk, onQuit }) {
 
   return (
     <div>
-      <TopBar left={`Asking about ${deck.title}`} right={<span className="dim text-sm">{deck.cards.length} cards in context</span>} onQuit={onQuit} />
+      <AIBanner what="The tutor" onConnect={onSettings} />
+      <TopBar label="Back" left={`Asking about ${deck.title}`} right={<span className="dim text-sm">{deck.cards.length} cards in context</span>} onQuit={onQuit} />
       {!msgs.length && (
         <div className="mb-4">
           <div className="dim text-sm mb-3">Ask anything about this deck. A few openers:</div>
@@ -1259,7 +1271,7 @@ function Editor({ deck, onSave, onQuit }) {
 
   return (
     <div>
-      <TopBar left="Editing deck" right={<span className="dim text-sm">{rows.length} rows</span>} onQuit={onQuit} />
+      <TopBar label="Done" left="Editing deck" right={<span className="dim text-sm">{rows.length} rows</span>} onQuit={onQuit} />
       <input value={title} onChange={(e) => setTitle(e.target.value)} className="field rounded-xl px-4 py-3 w-full mb-4" style={{ fontSize: 18 }} />
       <div className="flex flex-col gap-3 mb-4">
         {rows.map((r, i) => (
@@ -1323,6 +1335,18 @@ function Results({ result, modeName, coins, deckTitle, source, onDrill, onAgain,
 /* ------------------------------------------------------------------ */
 
 const THEMES = [
+  {
+    id: "twilight", name: "Twilight", price: 0, note: "Deep violet, soft glow",
+    vars: {
+      "--ink": "#120E26", "--panel": "#1C1740", "--panel2": "#241D52", "--line": "#332A63",
+      "--text": "#F2EEFF", "--dim": "#A79BD6", "--sunk": "#0D0A1C", "--hover": "#2C2460",
+      "--edge": "#463A80", "--sel": "#382D74", "--okbg": "#14331F", "--oktext": "#9BF0C0",
+      "--glow": "#2A1F5E", "--onink": "#0D0A1C",
+      "--a1": "#FFC14D", "--a2": "#FF6B9D", "--a3": "#6BE3FF", "--a4": "#A47BFF",
+      "--tfg1": "#33240A", "--tfg2": "#3A0A1E", "--tfg3": "#06222B", "--tfg4": "#190B3D",
+      "--good": "#4FE0A0", "--bad": "#FF6B9D",
+    },
+  },
   {
     id: "midnight", name: "Midnight", price: 0, note: "Where it all starts",
     vars: {
@@ -1765,6 +1789,117 @@ const EXTRA_CSS = `
 .dotted{background-image:radial-gradient(var(--edge) 1.4px, transparent 1.4px);background-size:22px 22px;}
 .sq{border-radius:6px!important;}
 .round{border-radius:22px!important;}
+.hero{position:relative;overflow:hidden;border-radius:22px;padding:20px;
+  background:linear-gradient(135deg,var(--a4) 0%,var(--sel) 55%,var(--panel2) 100%);
+  box-shadow:0 14px 34px rgba(0,0,0,.4);}
+.hero:after{content:"";position:absolute;right:-40px;top:-50px;width:190px;height:190px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.22),transparent 68%);}
+.statrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px 10px;text-align:center;}
+.stat b{display:block;font-size:22px;line-height:1.1;font-family:var(--disp),sans-serif;}
+.stat span{font-size:11px;color:var(--dim);}
+.card2{background:var(--panel);border:1px solid var(--line);border-radius:20px;
+  box-shadow:0 8px 22px rgba(0,0,0,.28);}
+.goal{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);}
+.goal:last-child{border-bottom:none;}
+.tick{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;border:2px solid var(--edge);font-size:13px;font-weight:800;}
+.tick.on{background:var(--good);border-color:var(--good);color:#07271A;}
+.bigbtn{width:100%;border:none;border-radius:20px;padding:16px;font-size:17px;font-weight:700;
+  color:#0D0A1C;background:linear-gradient(90deg,var(--a3),var(--a4));
+  box-shadow:0 10px 26px rgba(0,0,0,.35);transition:transform .12s ease,filter .12s ease;}
+.bigbtn:hover{filter:brightness(1.07);}
+.bigbtn:active{transform:scale(.985);}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--panel);
+  border-top:1px solid var(--line);backdrop-filter:blur(12px);
+  padding-bottom:env(safe-area-inset-bottom,0px);}
+.rail{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:8px;
+  padding:8px 12px;border-bottom:1px solid var(--line);}
+.rail .grow{flex:1;}
+.railbtn{background:var(--panel2);border:1px solid var(--line);border-radius:14px;
+  padding:8px 14px;font-size:14px;font-weight:600;position:relative;}
+.railbtn.hot{border-color:var(--a3);color:var(--a3);}
+.sheet{position:fixed;left:0;right:0;z-index:55;padding:0 12px;}
+.sheetinner{max-width:880px;margin:0 auto;background:var(--panel);border:1px solid var(--line);
+  border-radius:20px;padding:12px;box-shadow:0 -12px 40px rgba(0,0,0,.5);}
+.tabinner{max-width:880px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);}
+.tab{font-size:9.5px;}
+.tab{padding:9px 4px 11px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10px;color:var(--dim);background:none;border:none;}
+.tab em{font-style:normal;font-size:19px;line-height:1;}
+.tab.on{color:var(--a3);}
+.tab.on em{filter:drop-shadow(0 0 8px var(--a3));}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--a2);position:absolute;
+  transform:translate(10px,-4px);}
+.sheet{position:fixed;left:0;right:0;top:68px;z-index:56;padding:0 12px;}
+.sheetinner{max-width:880px;margin:0 auto;background:var(--panel);border:1px solid var(--line);
+  border-radius:22px;padding:14px;box-shadow:0 18px 50px rgba(0,0,0,.55);
+  animation:dropin .2s cubic-bezier(.2,.9,.3,1) both;}
+@keyframes dropin{from{opacity:0;transform:translateY(-10px) scale(.98)}to{opacity:1;transform:none}}
+.menubtn{position:fixed;top:14px;right:14px;z-index:57;width:44px;height:44px;border-radius:15px;
+  background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;
+  justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.34);transition:background .12s ease;}
+.menubtn:hover{background:var(--hover);}
+.menubtn .bars{display:flex;flex-direction:column;gap:4px;width:18px;}
+.menubtn .bars i{display:block;height:2px;border-radius:2px;background:var(--text);
+  transition:transform .2s ease,opacity .2s ease;}
+.menubtn.open .bars i:nth-child(1){transform:translateY(6px) rotate(45deg);}
+.menubtn.open .bars i:nth-child(2){opacity:0;}
+.menubtn.open .bars i:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+.menubtn .dot{transform:translate(14px,-14px);}
+.greet{padding:4px 58px 14px 2px;}
+.roomtag{position:absolute;right:12px;top:12px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:5px 12px;
+  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;}
+.seg{display:flex;gap:6px;background:var(--sunk);border:1px solid var(--line);
+  border-radius:999px;padding:5px;margin-bottom:16px;}
+.seg button{flex:1;border:none;background:none;border-radius:999px;padding:9px;
+  font-weight:700;font-size:14px;color:var(--dim);transition:background .14s ease,color .14s ease;}
+.seg button.on{background:linear-gradient(145deg,var(--panel2),var(--panel));color:var(--text);
+  box-shadow:0 3px 10px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);}
+.roomcard{display:block;position:relative;width:100%;padding:0;border-radius:22px;overflow:hidden;
+  border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.4);line-height:0;}
+.roomcard:after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.55) 100%);}
+.roomme{position:absolute;left:7%;bottom:6%;width:15%;z-index:2;}
+.roomtag{position:absolute;right:14px;bottom:12px;z-index:3;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:#fff;opacity:.85;line-height:1;}
+.seg{display:flex;gap:6px;padding:5px;border-radius:16px;background:var(--sunk);
+  border:1px solid var(--line);}
+.segbtn{flex:1;padding:10px;border-radius:12px;border:none;background:none;font-weight:700;
+  font-size:14px;color:var(--dim);transition:background .14s ease,color .14s ease;}
+.segbtn.on{background:linear-gradient(145deg,var(--panel2),var(--panel));color:var(--text);
+  box-shadow:0 4px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.07);}
+.wallet{max-width:880px;margin:0 auto;display:flex;align-items:center;justify-content:center;
+  gap:10px;padding:10px 14px 12px;}
+.wpill{display:flex;align-items:center;gap:8px;padding:7px 14px 7px 7px;border-radius:999px;
+  background:linear-gradient(145deg,var(--panel2),var(--panel));
+  border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.07);
+  font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;letter-spacing:.01em;}
+.wpill i{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-style:normal;font-size:12px;font-weight:800;flex-shrink:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3);}
+.wcoin i{background:linear-gradient(145deg,#FFD87A,#E09A1F);color:#4A2E00;}
+.wtick i{background:linear-gradient(145deg,#C9A8FF,#7B4CE0);color:#22093F;}
+.wfire i{background:linear-gradient(145deg,#FF9AA6,#E0405F);color:#3E020C;}
+.wcoin{color:var(--a1);} .wtick{color:var(--a4);} .wfire{color:var(--a2);}
+.strip2{display:flex;border-radius:20px;overflow:hidden;
+  background:linear-gradient(145deg,var(--panel2),var(--panel));
+  border:1px solid var(--line);box-shadow:0 10px 26px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06);}
+.s2{flex:1;padding:14px 8px;text-align:center;position:relative;}
+.s2 + .s2:before{content:"";position:absolute;left:0;top:18%;height:64%;width:1px;background:var(--line);}
+.s2 b{display:block;font-family:var(--disp),sans-serif;font-size:26px;line-height:1;
+  font-variant-numeric:tabular-nums;}
+.s2 b small{font-size:13px;opacity:.5;font-weight:600;margin-left:2px;}
+.s2 span{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--dim);margin-top:6px;font-weight:700;}
+.strip{display:flex;align-items:center;background:var(--panel);border:1px solid var(--line);
+  border-radius:18px;padding:14px 8px;box-shadow:0 8px 22px rgba(0,0,0,.26);}
+.sitem{flex:1;text-align:center;}
+.sitem b{display:block;font-family:var(--disp),sans-serif;font-size:24px;line-height:1.05;}
+.sitem b small{font-size:13px;opacity:.55;font-weight:600;}
+.sitem span{display:block;font-size:11px;color:var(--dim);margin-top:3px;}
+.sdiv{width:1px;align-self:stretch;background:var(--line);}
 .shopgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
 @media (min-width:640px){.shopgrid{grid-template-columns:repeat(3,minmax(0,1fr));}}
 .shoptile{border:2px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
@@ -1812,7 +1947,15 @@ function sfxCtx() {
   } catch (e) { return null; }
 }
 
+function buzz(kind) {
+  try {
+    if (!navigator.vibrate) return;
+    navigator.vibrate(kind === "wrong" ? [26, 40, 26] : kind === "level" ? [14, 30, 14, 30, 22] : 12);
+  } catch (e) {}
+}
+
 function playSfx(pack, kind) {
+  buzz(kind);
   if (!pack || pack === "off") return;
   const ctx = sfxCtx();
   if (!ctx) return;
@@ -1915,6 +2058,14 @@ const DAILY = [
   { day: 6, coins: 420 },
   { day: 7, coins: 700, item: "hat:crown", itemName: "Paper crown" },
 ];
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 5) return "Still up";
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 const yesterStr = () => new Date(Date.now() - 86400000).toISOString().slice(0, 10);
@@ -2189,6 +2340,8 @@ const TOPS = [
   { id: "suit", name: "Full suit", price: 3600 },
   { id: "dino", name: "Dino onesie", price: 5000 },
   { id: "banana", name: "Banana suit", price: 6500, ticket: 2 },
+  { id: "hotdog", name: "Hotdog suit", price: 5600 },
+  { id: "hivis", name: "Hi-vis vest", price: 1400 },
   { id: "box", name: "Cardboard armour", price: 8000, ticket: 3 },
   { id: "blouse", name: "Blouse", price: 700 },
   { id: "cardi", name: "Cardigan", price: 900 },
@@ -2288,6 +2441,10 @@ const HATS = [
   { id: "basket", name: "Laundry basket", price: 4800, mask: true, hideFace: true },
   { id: "trafficlight", name: "Traffic light", price: 5400 },
   { id: "toast", name: "Toast, balanced", price: 3400 },
+  { id: "wizard", name: "Wizard hat", price: 3800 },
+  { id: "propeller", name: "Propeller beanie", price: 2400 },
+  { id: "chickbucket", name: "Bucket of chicken", price: 4400 },
+  { id: "pineapple", name: "Pineapple", price: 3600 },
   { id: "halo", name: "Halo", price: 8000, ticket: 3 },
   { id: "beret", name: "Beret", price: 1200 },
   { id: "sunhat", name: "Sun hat", price: 1600 },
@@ -2304,6 +2461,7 @@ const GEAR = [
   { id: "eyepatch", name: "Eye patch", price: 2200 },
   { id: "swim", name: "Swim goggles", price: 2400 },
   { id: "vr", name: "VR headset", price: 4000 },
+  { id: "clown", name: "Clown nose", price: 900 },
   { id: "bandaid", name: "Face plaster", price: 1200 },
   { id: "hoops", name: "Hoop earrings", price: 800 },
   { id: "studs", name: "Star studs", price: 800 },
@@ -2322,6 +2480,7 @@ const BACKS = [
   { id: "cape", name: "Cape", price: 4200 },
   { id: "turtle", name: "Turtle shell", price: 3600 },
   { id: "balloons", name: "Balloons", price: 4800 },
+  { id: "overpack", name: "Backpack, overpacked", price: 2200 },
 ];
 
 const HANDS = [
@@ -2337,6 +2496,9 @@ const HANDS = [
   { id: "plunger", name: "Plunger", price: 3200 },
   { id: "noodles", name: "Instant noodles", price: 2600 },
   { id: "trophy", name: "Participation trophy", price: 3400 },
+  { id: "chicken", name: "Rubber chicken", price: 2800 },
+  { id: "extinguisher", name: "Fire extinguisher", price: 3400 },
+  { id: "shaker", name: "Protein shaker", price: 1800 },
   { id: "sword", name: "Highlighter sword", price: 5000, ticket: 2 },
 ];
 
@@ -2399,6 +2561,7 @@ const MAKEUP = [
   { id: "glitter", name: "Glitter", price: 1400 },
   { id: "warpaint", name: "Game day stripes", price: 1800 },
   { id: "tears", name: "Finals-week tears", price: 2200 },
+  { id: "marker", name: "Fell asleep first", price: 2600 },
 ];
 
 const CHAR_SLOTS = [
@@ -2609,6 +2772,7 @@ function Avatar({ a, size = 140, fluid, pose }) {
     blush: <g><ellipse cx="68" cy="116" rx="12" ry="7" fill="#F0708A" opacity="0.45" /><ellipse cx="132" cy="116" rx="12" ry="7" fill="#F0708A" opacity="0.45" /></g>,
     freckles: <g fill="#B4784A" opacity="0.7">{[[74, 114], [82, 120], [90, 114], [110, 114], [118, 120], [126, 114]].map(([x, y], n) => <circle key={n} cx={x} cy={y} r="2.4" />)}</g>,
     cateye: <g><path d="M60 96 q18 -12 36 0 q-6 16 -20 16 q-14 0 -16 -16 z" fill="none" stroke="#22242E" strokeWidth="4" /><path d="M104 96 q18 -12 36 0 q-2 16 -16 16 q-14 0 -20 -16 z" fill="none" stroke="#22242E" strokeWidth="4" /><path d="M56 92 l8 -6 M144 92 l-8 -6" stroke="#22242E" strokeWidth="4" strokeLinecap="round" /><rect x="94" y="96" width="12" height="4" fill="#22242E" /></g>,
+    clown: <g><circle cx="100" cy="114" r="11" fill="#E5484D" /><circle cx="96" cy="110" r="3.4" fill="#FF8A8A" /></g>,
     bandaid: <g transform="rotate(-18 122 88)"><rect x="106" y="82" width="34" height="13" rx="5" fill="#F0C89A" /><rect x="118" y="84" width="10" height="9" rx="2" fill="#E0B183" /></g>,
   }[v.gear];
 
@@ -2641,6 +2805,10 @@ function Avatar({ a, size = 140, fluid, pose }) {
     basket: <g><rect x="34" y="26" width="132" height="120" rx="10" fill="#7FB8E8" />{[46, 66, 86, 106, 126, 146].map((y) => <rect key={y} x="34" y={y} width="132" height="6" fill="rgba(255,255,255,0.35)" />)}{[54, 76, 98, 120, 142].map((x) => <rect key={x} x={x} y="26" width="6" height="120" fill="rgba(255,255,255,0.25)" />)}<rect x="26" y="60" width="12" height="34" rx="5" fill="#7FB8E8" /><rect x="162" y="60" width="12" height="34" rx="5" fill="#7FB8E8" /></g>,
     trafficlight: <g><rect x="76" y="-16" width="48" height="86" rx="8" fill="#2A2E3C" />{[["#E5484D", 4], ["#F5D34D", 26], ["#3DDC91", 48]].map(([c, y]) => <circle key={y} cx="100" cy={y} r="12" fill={c} />)}<rect x="60" y="66" width="80" height="10" rx="5" fill="#2A2E3C" /></g>,
     toast: <g><path d="M70 30 q0 -18 30 -18 q30 0 30 18 l0 34 l-60 0 z" fill="#E0B87A" /><path d="M78 34 q0 -12 22 -12 q22 0 22 12 l0 24 l-44 0 z" fill="#F2D9A8" /><ellipse cx="100" cy="66" rx="34" ry="7" fill="#C7A275" /></g>,
+    wizard: <g><path d="M100 -18 q-8 40 -44 78 l88 0 q-36 -38 -44 -78 z" fill="#5B3FA8" /><ellipse cx="100" cy="62" rx="58" ry="14" fill="#6B4BC0" /><path d="M78 34 l4 -9 l4 9 l9 4 l-9 4 l-4 9 l-4 -9 l-9 -4 z" fill="#F5D34D" /><circle cx="118" cy="16" r="3.5" fill="#F5D34D" /><rect x="60" y="52" width="80" height="9" rx="4" fill="#F5D34D" opacity="0.85" /></g>,
+    propeller: <g><path d="M54 64 q46 -44 92 0 z" fill="#E5484D" /><path d="M54 64 q46 -14 92 0 l0 8 l-92 0 z" fill="#3B6FE0" /><rect x="97" y="12" width="6" height="14" fill="#8E96A8" /><g><animateTransform attributeName="transform" type="rotate" from="0 100 12" to="360 100 12" dur="1.4s" repeatCount="indefinite" /><rect x="66" y="9" width="34" height="6" rx="3" fill="#F5D34D" /><rect x="100" y="9" width="34" height="6" rx="3" fill="#25D0C0" /></g></g>,
+    chickbucket: <g><path d="M58 20 l84 0 l-8 46 l-68 0 z" fill="#F2F2F5" /><rect x="54" y="14" width="92" height="12" rx="4" fill="#E5484D" /><path d="M66 66 q34 12 68 0 l-2 12 q-32 10 -64 0 z" fill="#E0E3EA" /><text x="100" y="52" fontSize="15" fontWeight="800" textAnchor="middle" fill="#E5484D">KFZ</text><ellipse cx="82" cy="18" rx="12" ry="7" fill="#C7A275" /><ellipse cx="118" cy="16" rx="10" ry="6" fill="#D9B184" /></g>,
+    pineapple: <g><ellipse cx="100" cy="46" rx="40" ry="30" fill="#F0B84A" /><g opacity="0.45" stroke="#C78A28" strokeWidth="2.5">{[[64,32,136,60],[64,60,136,32],[100,18,100,76]].map(([a,b,c,d],n)=><line key={n} x1={a} y1={b} x2={c} y2={d} />)}</g><g fill="#4C9A5C">{[[100,-2],[78,6],[122,6],[88,-6],[112,-6]].map(([x,y],n)=><path key={n} d={`M${x} ${y} q-9 20 0 30 q9 -10 0 -30 z`} />)}</g></g>,
     halo: <g><ellipse cx="100" cy="18" rx="34" ry="10" fill="none" stroke="#F5D34D" strokeWidth="7" /><ellipse cx="100" cy="18" rx="34" ry="10" fill="none" stroke="#FFF3B0" strokeWidth="2" /></g>,
   }[v.hat];
 
@@ -2653,6 +2821,7 @@ function Avatar({ a, size = 140, fluid, pose }) {
     jet: <g><rect x="48" y="150" width="24" height="50" rx="10" fill="#8E96A8" /><rect x="128" y="150" width="24" height="50" rx="10" fill="#8E96A8" /><path d="M52 200 q8 22 16 0 z" fill="#F0651F" /><path d="M132 200 q8 22 16 0 z" fill="#F0651F" /></g>,
     turtle: <g><ellipse cx="100" cy="182" rx="62" ry="48" fill="#4C9A5C" /><ellipse cx="100" cy="182" rx="44" ry="34" fill="#3B7F49" />{[[80, 168], [120, 168], [100, 196]].map(([x, y], n) => <path key={n} d={`M${x} ${y - 12} l12 8 l-5 14 l-14 0 l-5 -14 z`} fill="#2E6B3A" />)}</g>,
     balloons: <g>{[[46, 60, "#E5484D"], [24, 92, "#F5D34D"], [66, 96, "#54CFE0"]].map(([x, y, c], n) => <g key={n}><ellipse cx={x} cy={y} rx="19" ry="23" fill={c} /><path d={`M${x} ${y + 23} Q${x + 8} 150 62 176`} stroke="#C9C9D2" strokeWidth="2" fill="none" /></g>)}</g>,
+    overpack: <g><rect x="46" y="146" width="28" height="62" rx="10" fill="#3E6B8C" /><rect x="126" y="146" width="28" height="62" rx="10" fill="#3E6B8C" /><rect x="40" y="136" width="120" height="70" rx="14" fill="#2E5470" /><rect x="52" y="150" width="96" height="16" rx="6" fill="#26455C" /><path d="M64 136 l0 -18 l14 0 l0 18" stroke="#C7A275" strokeWidth="6" fill="none" /><rect x="120" y="112" width="26" height="28" rx="3" fill="#E5484D" /><rect x="88" y="118" width="18" height="22" rx="2" fill="#F5D34D" /></g>,
     cape: <path d="M62 150 q38 90 76 0 l14 84 q-52 22 -104 0 z" fill="#8A2436" />,
   }[v.back];
 
@@ -2669,6 +2838,9 @@ function Avatar({ a, size = 140, fluid, pose }) {
     plunger: <g><rect x="146" y="150" width="8" height="56" rx="4" fill="#8E6B3A" /><path d="M136 200 q14 -18 28 0 q-14 22 -28 0 z" fill="#E5484D" /></g>,
     noodles: <g><path d="M134 190 q16 -8 32 0 l-4 26 q-12 6 -24 0 z" fill="#F2EDE4" /><rect x="132" y="186" width="36" height="8" rx="3" fill="#E5484D" /><path d="M144 186 q6 -12 14 -4" stroke="#F0C33C" strokeWidth="3" fill="none" /></g>,
     trophy: <g><path d="M138 184 l26 0 l-3 18 l-20 0 z" fill="#F0C33C" /><rect x="146" y="202" width="10" height="10" fill="#D8A82A" /><rect x="138" y="212" width="26" height="7" rx="2" fill="#8E6B3A" /><path d="M136 186 q-10 6 0 12 M166 186 q10 6 0 12" stroke="#F0C33C" strokeWidth="3" fill="none" /></g>,
+    chicken: <g transform="rotate(14 150 196)"><ellipse cx="150" cy="200" rx="13" ry="20" fill="#F5D34D" /><circle cx="150" cy="176" r="10" fill="#F5D34D" /><path d="M141 172 l-9 3 l9 5 z" fill="#F0A93A" /><circle cx="147" cy="174" r="2" fill="#22242E" /><path d="M146 166 q4 -7 8 0" stroke="#E5484D" strokeWidth="3.5" fill="none" /><path d="M150 220 q-5 10 -10 12 M150 220 q5 10 10 12" stroke="#F0A93A" strokeWidth="3" fill="none" /></g>,
+    extinguisher: <g><rect x="140" y="182" width="24" height="42" rx="9" fill="#E5484D" /><rect x="140" y="196" width="24" height="10" fill="#F2F2F5" opacity="0.85" /><rect x="147" y="172" width="10" height="12" rx="3" fill="#3A3F52" /><path d="M157 176 q12 -4 14 8" stroke="#3A3F52" strokeWidth="4" fill="none" /></g>,
+    shaker: <g><rect x="140" y="184" width="24" height="38" rx="6" fill="#25D0C0" opacity="0.55" /><rect x="140" y="184" width="24" height="9" rx="4" fill="#22242E" /><rect x="142" y="204" width="20" height="16" rx="3" fill="#F2EDE4" opacity="0.8" /><rect x="144" y="176" width="16" height="9" rx="3" fill="#22242E" /></g>,
     sword: <g transform="rotate(-24 150 190)"><rect x="145" y="146" width="12" height="66" rx="4" fill="#C8F53C" /><rect x="138" y="208" width="26" height="8" rx="3" fill="#3A3F52" /></g>,
   }[v.hand];
 
@@ -2702,6 +2874,12 @@ function Avatar({ a, size = 140, fluid, pose }) {
     liner: <g><path d="M64 96 l-8 -6 M136 96 l8 -6" stroke="#22242E" strokeWidth="4" strokeLinecap="round" /><path d="M66 94 q12 -8 24 -2" stroke="#22242E" strokeWidth="3" fill="none" /><path d="M134 94 q-12 -8 -24 -2" stroke="#22242E" strokeWidth="3" fill="none" /></g>,
     glitter: <g>{[[66, 88], [76, 82], [124, 82], [134, 88], [70, 96], [130, 96]].map(([x, y], n) => <path key={n} d={`M${x} ${y - 5} l1.6 3.4 l3.4 1.6 l-3.4 1.6 l-1.6 3.4 l-1.6 -3.4 l-3.4 -1.6 l3.4 -1.6 z`} fill="#F5D34D" />)}</g>,
     warpaint: <g><rect x="60" y="104" width="34" height="7" rx="3" fill="#25D0C0" transform="rotate(-8 77 107)" /><rect x="106" y="104" width="34" height="7" rx="3" fill="#25D0C0" transform="rotate(8 123 107)" /></g>,
+    marker: <g stroke="#3B6FE0" strokeWidth="3" fill="none" strokeLinecap="round">
+      <path d="M62 92 q10 -8 20 -2 M118 90 q10 -6 20 2" />
+      <path d="M86 138 q14 8 28 0" />
+      <circle cx="100" cy="126" r="9" />
+      <path d="M124 118 l10 -4 M126 126 l11 0 M124 134 l10 4" />
+    </g>,
     tears: <g><path d="M74 110 q-3 16 2 24" stroke="#7FB8E8" strokeWidth="4" fill="none" strokeLinecap="round" /><path d="M126 110 q3 16 -2 24" stroke="#7FB8E8" strokeWidth="4" fill="none" strokeLinecap="round" /><circle cx="76" cy="136" r="4" fill="#7FB8E8" /></g>,
   }[v.makeup];
 
@@ -2783,6 +2961,16 @@ function Avatar({ a, size = 140, fluid, pose }) {
         return <g>{torso("#4C9A5C", H + 4, 20)}{sleeve("l", 50, "#4C9A5C", false)}{sleeve("r", 50, "#4C9A5C", false)}<ellipse cx="100" cy="190" rx="25" ry="21" fill="#A8D8A8" /><g fill="#3B7F49">{[158, 174, 190, 206].map((y) => <path key={y} d={`M${tx - 1} ${y} l-11 8 l11 6 z`} />)}</g></g>;
       case "banana":
         return <g><path d={`M${tx - 6} 152 q${tw / 2 + 6} -20 ${tw + 12} 0 l-8 72 q-${tw / 2} 14 -${tw - 4} 0 z`} fill="#F5D33C" /><path d={`M${tx - 4} 154 q10 60 8 68`} stroke="#DCB92C" strokeWidth="5" fill="none" />{sleeve("l", 48, "#F5D33C", false)}{sleeve("r", 48, "#F5D33C", false)}<rect x="94" y="138" width="12" height="18" rx="4" fill="#8E7A22" /></g>;
+      case "hotdog":
+        return <g><path d={`M${tx - 10} 152 q${tw / 2 + 10} -22 ${tw + 20} 0 l-6 66 q-${tw / 2} 16 -${tw + 8} 0 z`} fill="#F0C070" />
+          <path d={`M${tx - 2} 160 q${tw / 2} -14 ${tw + 4} 0 l-4 52 q-${tw / 2} 12 -${tw} 0 z`} fill="#D9604A" />
+          <path d={`M${tx + 4} 172 q${tw / 2} 16 ${tw - 8} -4`} stroke="#F5D34D" strokeWidth="6" fill="none" />
+          <path d={`M${tx + 4} 192 q${tw / 2} 14 ${tw - 8} -4`} stroke="#F2F2F5" strokeWidth="5" fill="none" />
+          {sleeve("l", 48, "#F0C070", false)}{sleeve("r", 48, "#F0C070", false)}</g>;
+      case "hivis":
+        return <g>{torso("#D9E84A")}{arms}<rect x={tx} y="170" width={tw} height="9" fill="#F2F2F5" opacity="0.9" />
+          <rect x={tx} y="190" width={tw} height="9" fill="#F2F2F5" opacity="0.9" />
+          <rect x="96" y="150" width="8" height={H} fill="rgba(0,0,0,.25)" />{collar("crew")}</g>;
       case "box":
         return <g><rect x={tx - 12} y="146" width={tw + 24} height="72" fill="#C7A275" /><rect x={tx - 12} y="146" width="16" height="72" fill="rgba(0,0,0,0.15)" /><path d={`M${tx - 12} 170 L${tx + tw + 12} 170`} stroke="#A8814F" strokeWidth="4" /><rect x="86" y="178" width="28" height="20" fill="#A8814F" /><text x="100" y="163" fontSize="12" fontWeight="700" textAnchor="middle" fill="#7A5C34">FRAGILE</text></g>;
       case "corset":
@@ -2989,11 +3177,14 @@ const ROOM_SLOTS = [
     { id: "dark", name: "Dark tile", price: 0 }, { id: "wood", name: "Warm wood", quest: "q-build" },
     { id: "grid", name: "Grid glass", price: 1800 }, { id: "checker", name: "Checkerboard", price: 2600 },
     { id: "carpet", name: "Deep carpet", price: 3400 },
+    { id: "lava", name: "The floor is lava", price: 5200 },
+    { id: "grass", name: "Actual grass", price: 3800 },
   ] },
   { key: "rug", name: "Rug", items: [
     { id: "none", name: "Bare", price: 0 }, { id: "round", name: "Round rug", price: 0 },
     { id: "neon", name: "Glow ring", quest: "q-first" }, { id: "shag", name: "Shag square", price: 1600 },
     { id: "persian", name: "Patterned", price: 2800 },
+    { id: "bear", name: "Bear rug, unbothered", price: 4400 },
   ] },
   { key: "desk", name: "Desk", items: [
     { id: "none", name: "No desk", price: 0 }, { id: "simple", name: "Simple desk", price: 0 },
@@ -3010,16 +3201,21 @@ const ROOM_SLOTS = [
     { id: "city", name: "Night skyline", quest: "q-modes" }, { id: "reef", name: "Aquarium", quest: "q-ask" },
     { id: "fire", name: "Fireplace", price: 2200 }, { id: "chart", name: "Ticker board", price: 3600 },
     { id: "space", name: "Slow orbit", price: 5000 },
+    { id: "static", name: "Pure static", price: 900 },
+    { id: "loading", name: "Loading, 99%", price: 2600 },
   ] },
   { key: "lamp", name: "Lighting", items: [
     { id: "none", name: "None", price: 0 }, { id: "floor", name: "Floor lamp", price: 600 },
     { id: "lava", name: "Lava lamp", price: 2000 }, { id: "neon", name: "Neon sign", quest: "q-streak" },
     { id: "disco", name: "Disco ball", price: 4600 },
+    { id: "salt", name: "Salt lamp", price: 1400 },
   ] },
   { key: "art", name: "Wall art", items: [
     { id: "none", name: "Bare wall", price: 0 }, { id: "posters", name: "Poster trio", price: 900 },
     { id: "pennant", name: "Pennant", price: 1400 }, { id: "board", name: "Whiteboard", price: 2000 },
     { id: "trophy", name: "Trophy shelf", quest: "q-boss" }, { id: "clock", name: "Big clock", price: 1800 },
+    { id: "hangin", name: "Hang in there", price: 1600 },
+    { id: "dart", name: "Dartboard", price: 2200 },
   ] },
   { key: "shelf", name: "Shelving", items: [
     { id: "none", name: "None", price: 0 }, { id: "books", name: "Bookshelf", price: 800 },
@@ -3029,20 +3225,26 @@ const ROOM_SLOTS = [
     { id: "none", name: "None", price: 0 }, { id: "small", name: "Little pot", price: 0 },
     { id: "monstera", name: "Monstera", quest: "q-century" }, { id: "cactus", name: "Cactus", price: 1200 },
     { id: "tree", name: "Fig tree", price: 2800 }, { id: "hang", name: "Hanging vines", price: 3400 },
+    { id: "dead", name: "Whatever this was", price: 800 },
   ] },
   { key: "pet", name: "Company", items: [
     { id: "none", name: "Alone", price: 0 }, { id: "duck", name: "Rubber duck", price: 900 },
     { id: "fish", name: "Fishbowl", price: 1800 }, { id: "cat", name: "Cat", quest: "q-drift" },
     { id: "bot", name: "Little robot", quest: "q-survive" }, { id: "dog", name: "Dog", price: 5000 },
+    { id: "pigeon", name: "Pigeon that got in", price: 2800 },
+    { id: "rock", name: "Pet rock", price: 600 },
   ] },
   { key: "arcade", name: "Big toys", items: [
     { id: "none", name: "None", price: 0 }, { id: "cab", name: "Arcade cabinet", price: 4000 },
     { id: "fridge", name: "Mini fridge", price: 2400 }, { id: "hoop", name: "Mini hoop", price: 2000 },
     { id: "drum", name: "Drum kit", price: 5600 },
+    { id: "vending", name: "Vending machine", price: 6200 },
+    { id: "tread", name: "Treadmill, for clothes", price: 4800 },
   ] },
   { key: "window", name: "Window", items: [
     { id: "none", name: "No window", price: 0 }, { id: "night", name: "City night", price: 1200 },
     { id: "rain", name: "Rainy glass", price: 2400 }, { id: "space", name: "Porthole to space", price: 6000, ticket: 2 },
+    { id: "brick", name: "Bricked up", price: 700 },
   ] },
   { key: "speaker", name: "Speakers", items: [
     { id: "none", name: "None", price: 0 }, { id: "book", name: "Bookshelf pair", price: 1000 },
@@ -3059,6 +3261,8 @@ const ROOM_SLOTS = [
   { key: "clutter", name: "Desk clutter", items: [
     { id: "none", name: "Tidy", price: 0 }, { id: "mugs", name: "Too many mugs", price: 700 },
     { id: "snacks", name: "Snack pile", price: 1100 }, { id: "papers", name: "Paper avalanche", price: 1500 },
+    { id: "cans", name: "Energy drink pyramid", price: 1900 },
+    { id: "sock", name: "One sock", price: 400 },
   ] },
 ];
 
@@ -3112,6 +3316,12 @@ function Room({ r, glow = "#7C5BFF", width = "100%", due = 0, score = 0, trophie
       {m.wall === "gold" && (
         <g opacity="0.3">{[0, 1, 2, 3, 4, 5, 6, 7].map((n) => <rect key={n} x={n * 100} y="0" width="46" height="300" fill="#F5D34D" />)}</g>
       )}
+      {m.wall === "grid" && (
+        <g opacity="0.22">
+          {[...Array(17)].map((_, n) => <line key={"v" + n} x1={n * 50} y1="0" x2={n * 50} y2="300" stroke="#9FD8F0" strokeWidth="1.5" />)}
+          {[...Array(7)].map((_, n) => <line key={"h" + n} x1="0" y1={n * 50} x2="800" y2={n * 50} stroke="#9FD8F0" strokeWidth="1.5" />)}
+        </g>
+      )}
       {m.wall === "void" && (
         <g>{[...Array(40)].map((_, n) => <circle key={n} cx={(n * 97) % 780 + 10} cy={(n * 53) % 280 + 10} r={n % 5 === 0 ? 2.4 : 1.4} fill="#fff" opacity="0.7" />)}</g>
       )}
@@ -3126,6 +3336,14 @@ function Room({ r, glow = "#7C5BFF", width = "100%", due = 0, score = 0, trophie
       )}
       {m.window === "rain" && (
         <g><rect x="600" y="60" width="150" height="110" rx="8" fill="#16305A" stroke="#5C4A8C" strokeWidth="6" />{[...Array(14)].map((_, n) => <path key={n} d={`M${610 + n * 10} ${70 + (n % 4) * 22} l-4 18`} stroke="#9FD8F0" strokeWidth="2" opacity="0.7" />)}</g>
+      )}
+      {m.window === "brick" && (
+        <g><rect x="600" y="60" width="150" height="110" rx="8" fill="#5A3226" stroke="#3E2018" strokeWidth="6" />
+          {[0, 1, 2, 3].map((r) => [0, 1, 2, 3].map((c) => (
+            <rect key={`${r}${c}`} x={606 + c * 36 + (r % 2 ? -18 : 0)} y={66 + r * 26} width="32" height="22" rx="2"
+              fill="#6B3E2E" stroke="#4A2A1E" strokeWidth="2" />
+          )))}
+        </g>
       )}
       {m.window === "space" && (
         <g><circle cx="678" cy="112" r="62" fill="#05061A" stroke="#8E96A8" strokeWidth="8" /><circle cx="662" cy="100" r="22" fill="#C87F4A" /><ellipse cx="662" cy="100" rx="36" ry="8" fill="#E0B183" opacity="0.7" />{[...Array(10)].map((_, n) => <circle key={n} cx={640 + ((n * 37) % 76)} cy={80 + ((n * 23) % 64)} r="1.6" fill="#fff" />)}</g>
@@ -3145,6 +3363,26 @@ function Room({ r, glow = "#7C5BFF", width = "100%", due = 0, score = 0, trophie
       {m.art === "trophy" && (
         <g><rect x="70" y="120" width="190" height="10" rx="4" fill="#7A4A28" />{[100, 150, 200, 240].slice(0, Math.max(1, Math.min(4, trophies))).map((x, n) => <g key={x}><rect x={x - 10} y={104 - n % 2 * 6} width="20" height={16 + (n % 2) * 6} rx="4" fill="#F0C33C" /><rect x={x - 14} y="114" width="28" height="6" rx="3" fill="#C79A22" /></g>)}</g>
       )}
+      {m.art === "hangin" && (
+        <g><rect x="70" y="52" width="150" height="120" rx="6" fill="#F4F6FA" />
+          <rect x="78" y="60" width="134" height="86" fill="#7FC2DE" />
+          <path d="M120 146 q6 -40 24 -52" stroke="#5A3A22" strokeWidth="7" fill="none" />
+          <ellipse cx="150" cy="86" rx="17" ry="14" fill="#C7A275" />
+          <circle cx="144" cy="82" r="3" fill="#22242E" /><circle cx="156" cy="82" r="3" fill="#22242E" />
+          <path d="M138 96 q12 8 24 0" stroke="#22242E" strokeWidth="2.5" fill="none" />
+          <path d="M136 94 q-4 12 4 16 M164 94 q4 12 -4 16" stroke="#C7A275" strokeWidth="5" fill="none" />
+          <text x="145" y="164" fontSize="12" fontWeight="800" textAnchor="middle" fill="#2B3450">HANG IN THERE</text>
+        </g>
+      )}
+      {m.art === "dart" && (
+        <g>{[42, 34, 26, 18, 10].map((r, n) => (
+          <circle key={r} cx="150" cy="104" r={r} fill={n % 2 ? "#F4F6FA" : "#22242E"} />
+        ))}
+          <circle cx="150" cy="104" r="5" fill="#E5484D" />
+          <g transform="rotate(38 168 88)"><rect x="166" y="60" width="4" height="30" fill="#C9C9D2" />
+            <path d="M162 56 l8 0 l-4 -10 z" fill="#25D0C0" /></g>
+        </g>
+      )}
       {m.art === "clock" && (
         <g><circle cx="150" cy="100" r="42" fill="#F4F6FA" stroke="#2B3450" strokeWidth="6" /><rect x="147" y="70" width="6" height="34" rx="3" fill="#2B3450" /><rect x="150" y="97" width="28" height="6" rx="3" fill="#E5484D" /></g>
       )}
@@ -3157,6 +3395,25 @@ function Room({ r, glow = "#7C5BFF", width = "100%", due = 0, score = 0, trophie
           {m.tv === "reef" && <g><rect x="450" y="60" width="230" height="130" fill="#12506B" />{[...Array(6)].map((_, n) => <g key={n}><ellipse cx={480 + n * 34} cy={100 + (n % 3) * 30} rx="14" ry="9" fill={["#F0A93A", "#E5484D", "#F5D34D"][n % 3]} /><path d={`M${466 + n * 34} ${100 + (n % 3) * 30} l-10 -6 l0 12 z`} fill={["#F0A93A", "#E5484D", "#F5D34D"][n % 3]} /></g>)}<g fill="#2A9A6A">{[470, 620, 660].map((x) => <rect key={x} x={x} y="150" width="10" height="40" rx="5" />)}</g></g>}
           {m.tv === "fire" && <g><rect x="450" y="60" width="230" height="130" fill="#2A1408" />{[520, 560, 600].map((x, n) => <path key={x} d={`M${x} 180 q-20 -${40 + n * 12} 0 -${60 + n * 14} q20 ${20 + n * 8} 0 ${60 + n * 14} z`} fill={["#F0651F", "#F5A623", "#F5D34D"][n]} opacity="0.9" />)}</g>}
           {m.tv === "chart" && <g><rect x="450" y="60" width="230" height="130" fill="#07120E" /><path d="M460 170 L500 150 L530 158 L570 110 L610 128 L670 76" stroke="#35E08A" strokeWidth="4" fill="none" /><text x="460" y="86" fontSize="18" fontWeight="700" fill="#35E08A">+{Math.max(0, score).toLocaleString()}</text></g>}
+          {m.tv === "static" && (
+            <g><rect x="450" y="60" width="230" height="130" fill="#1A1A1E" />
+              {[...Array(150)].map((_, n) => (
+                <rect key={n} x={452 + ((n * 37) % 226)} y={62 + ((n * 61) % 126)} width="4" height="3"
+                  fill={n % 3 === 0 ? "#F2F2F5" : n % 3 === 1 ? "#8E96A8" : "#4A4A52"}>
+                  <animate attributeName="opacity" values="1;0.1;1" dur="0.2s" begin={`${(n % 7) * 0.03}s`} repeatCount="indefinite" />
+                </rect>
+              ))}
+            </g>
+          )}
+          {m.tv === "loading" && (
+            <g><rect x="450" y="60" width="230" height="130" fill="#0E1224" />
+              <circle cx="565" cy="112" r="24" fill="none" stroke="#2E3459" strokeWidth="6" />
+              <path d="M565 88 a24 24 0 0 1 24 24" fill="none" stroke="#6BE3FF" strokeWidth="6" strokeLinecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="0 565 112" to="360 565 112" dur="1.1s" repeatCount="indefinite" />
+              </path>
+              <text x="565" y="162" fontSize="16" fontWeight="700" textAnchor="middle" fill="#A79BD6">99%</text>
+            </g>
+          )}
           {m.tv === "space" && <g><rect x="450" y="60" width="230" height="130" fill="#05061A" /><circle cx="565" cy="125" r="34" fill="#3E5CA8" /><ellipse cx="565" cy="125" rx="58" ry="12" fill="#A88ED8" opacity="0.7" />{[...Array(12)].map((_, n) => <circle key={n} cx={456 + ((n * 61) % 220)} cy={66 + ((n * 37) % 118)} r="1.6" fill="#fff" />)}</g>}
           <rect x="540" y="200" width="50" height="14" fill="#15161E" />
         </g>
@@ -3174,6 +3431,15 @@ function Room({ r, glow = "#7C5BFF", width = "100%", due = 0, score = 0, trophie
       {m.lamp === "floor" && <g><rect x="360" y="180" width="8" height="120" fill="#3E4356" /><path d="M340 180 L388 180 L378 146 L350 146 z" fill="#F0D9A8" /><ellipse cx="364" cy="182" rx="46" ry="30" fill="#FFE9A8" opacity="0.16" /></g>}
       {m.lamp === "lava" && <g><rect x="352" y="220" width="30" height="12" rx="4" fill="#8E96A8" /><path d="M356 220 q-6 -70 11 -70 q17 0 11 70 z" fill="#E5484D" opacity="0.55" />{[168, 190, 206].map((y, n) => <ellipse key={y} cx={367 + (n % 2 ? 4 : -4)} cy={y} rx={7 - n} ry={9 - n} fill="#F5A623" />)}</g>}
       {m.lamp === "neon" && <g><path d="M320 60 q40 -30 80 0 q-40 34 -80 0 z" fill="none" stroke="#FF6EC7" strokeWidth="6" /><text x="336" y="104" fontSize="30" fontWeight="800" fill="#4CE0F5" opacity="0.95">study</text></g>}
+      {m.lamp === "salt" && (
+        <g><path d="M352 232 l30 0 l-4 10 l-22 0 z" fill="#5A3A22" />
+          <path d="M356 232 q-6 -34 11 -42 q19 6 13 42 z" fill="#F0885A" opacity="0.92" />
+          <path d="M360 226 q-2 -20 7 -26" stroke="#FFC9A8" strokeWidth="4" fill="none" opacity="0.8" />
+          <ellipse cx="367" cy="212" rx="44" ry="34" fill="#F0885A" opacity="0.14">
+            <animate attributeName="opacity" values="0.1;0.2;0.1" dur="4s" repeatCount="indefinite" />
+          </ellipse>
+        </g>
+      )}
       {m.lamp === "disco" && <g><rect x="396" y="0" width="4" height="34" fill="#8E96A8" /><circle cx="398" cy="52" r="24" fill="#8E96A8" />{[0, 1, 2, 3].map((n) => <rect key={n} x={382 + n * 8} y="30" width="6" height="44" fill="#C8CEDC" opacity="0.5" />)}{[0, 1, 2, 3, 4, 5].map((n) => <path key={n} d={`M398 52 L${240 + n * 64} 300`} stroke="#F5F5F7" strokeWidth="2" opacity="0.12" />)}</g>}
 
       {m.plant === "hang" && <g><rect x="700" y="24" width="8" height="30" fill="#5A3A22" /><ellipse cx="704" cy="66" rx="26" ry="18" fill="#8E6B3A" />{[684, 700, 716].map((x, n) => <path key={x} d={`M${x} 78 q${n % 2 ? 12 : -12} 50 ${n % 2 ? -6 : 6} 92`} stroke="#4C9A5C" strokeWidth="6" fill="none" />)}</g>}
@@ -3183,6 +3449,44 @@ function Room({ r, glow = "#7C5BFF", width = "100%", due = 0, score = 0, trophie
       {m.floor === "checker" && <g opacity="0.5">{[...Array(10)].map((_, c) => [0, 1].map((r2) => (c + r2) % 2 === 0 ? <rect key={`${c}${r2}`} x={c * 80} y={300 + r2 * 40} width="80" height="40" fill="#F2F2F5" opacity="0.22" /> : null))}</g>}
       {m.floor === "carpet" && <g opacity="0.25">{[...Array(30)].map((_, n) => <circle key={n} cx={(n * 71) % 790} cy={306 + ((n * 29) % 70)} r="8" fill="#000" />)}</g>}
 
+      {m.floor === "lava" && (
+        <g><rect x="0" y="298" width="800" height="82" fill="#3A1004" />
+          {[...Array(7)].map((_, n) => (
+            <path key={n} d={`M${n * 120} 378 q28 -${24 + (n % 3) * 10} 56 -42 q26 -16 52 -4`}
+              stroke="#FF6A1F" strokeWidth={5 - (n % 2)} fill="none">
+              <animate attributeName="opacity" values="0.45;1;0.45" dur={`${2 + (n % 3)}s`} repeatCount="indefinite" />
+            </path>
+          ))}
+          <rect x="0" y="298" width="800" height="12" fill="#FFB020" opacity="0.55" />
+        </g>
+      )}
+      {m.floor === "grass" && (
+        <g><rect x="0" y="298" width="800" height="82" fill="#2E6B34" />
+          {[...Array(60)].map((_, n) => (
+            <path key={n} d={`M${n * 14} 380 q${n % 2 ? 4 : -4} -14 ${n % 3 ? 2 : -2} -24`}
+              stroke={n % 4 === 0 ? "#4C9A5C" : "#3E8C4A"} strokeWidth="3" fill="none" />
+          ))}
+          {[120, 430, 690].map((x) => <ellipse key={x} cx={x} cy="342" rx="15" ry="7" fill="#F5D34D" opacity="0.7" />)}
+        </g>
+      )}
+      <g filter={tintFilter((m.tint || {}).rug)}>{m.rug === "bear" && (
+        <g><ellipse cx="400" cy="336" rx="130" ry="33" fill="#8A6236" />
+          <circle cx="264" cy="330" r="29" fill="#8A6236" />
+          <circle cx="246" cy="310" r="11" fill="#8A6236" /><circle cx="284" cy="308" r="11" fill="#8A6236" />
+          <circle cx="254" cy="326" r="4" fill="#22242E" /><circle cx="274" cy="326" r="4" fill="#22242E" />
+          <ellipse cx="264" cy="340" rx="9" ry="6" fill="#4A3320" />
+          {[[344, 306], [344, 364], [500, 306], [500, 364]].map(([x, y], n) => (
+            <ellipse key={n} cx={x} cy={y} rx="25" ry="16" fill="#7A5630" />
+          ))}
+        </g>
+      )}</g>
+      {m.desk === "simple" && (
+        <g><rect x="90" y="238" width="180" height="12" rx="4" fill="#7A4A28" />
+          <rect x="100" y="250" width="10" height="52" fill="#5A3A22" />
+          <rect x="250" y="250" width="10" height="52" fill="#5A3A22" />
+          <rect x="112" y="228" width="34" height="10" rx="2" fill="#3E6B8C" />
+        </g>
+      )}
       <g filter={tintFilter((m.tint || {}).rug)}>{m.rug === "round" && <ellipse cx="400" cy="336" rx="150" ry="34" fill="#5C4A8C" opacity="0.85" />}</g>
       <g filter={tintFilter((m.tint || {}).rug)}>{m.rug === "neon" && <g><ellipse cx="400" cy="336" rx="150" ry="34" fill={glow} opacity="0.35" /><ellipse cx="400" cy="336" rx="150" ry="34" fill="none" stroke={glow} strokeWidth="6" /><ellipse cx="400" cy="336" rx="110" ry="24" fill="none" stroke={glow} strokeWidth="3" opacity="0.7" /></g>}</g>
       <g filter={tintFilter((m.tint || {}).rug)}>{m.rug === "shag" && <g><rect x="256" y="308" width="290" height="58" rx="8" fill="#C7724A" />{[...Array(24)].map((_, n) => <rect key={n} x={260 + n * 12} y="308" width="6" height="58" fill="#B4593A" opacity="0.5" />)}</g>}</g>
@@ -3203,6 +3507,17 @@ function Room({ r, glow = "#7C5BFF", width = "100%", due = 0, score = 0, trophie
 
       {m.clutter === "mugs" && <g>{[[112, 226], [136, 228], [160, 224]].map(([x, y], n) => <g key={n}><rect x={x} y={y} width="16" height="14" rx="3" fill={["#F4F6FA", "#E5484D", "#25D0C0"][n]} /><path d={`M${x + 16} ${y + 3} q7 4 0 8`} stroke={["#F4F6FA", "#E5484D", "#25D0C0"][n]} strokeWidth="3" fill="none" /></g>)}</g>}
       {m.clutter === "snacks" && <g><rect x="180" y="222" width="26" height="18" rx="3" fill="#F0651F" /><rect x="210" y="226" width="20" height="14" rx="3" fill="#F5D34D" /><circle cx="168" cy="232" r="8" fill="#C7724A" /></g>}
+      {m.clutter === "cans" && (
+        <g>{[[128, 226], [146, 226], [164, 226], [137, 208], [155, 208], [146, 190]].map(([x, y], n) => (
+          <g key={n}><rect x={x} y={y} width="15" height="18" rx="2" fill={n % 2 ? "#C8F53C" : "#25D0C0"} />
+            <rect x={x} y={y + 6} width="15" height="5" fill="rgba(0,0,0,.3)" /></g>
+        ))}</g>
+      )}
+      {m.clutter === "sock" && (
+        <g><path d="M186 232 q-2 -14 8 -14 q10 0 8 14 q10 2 12 8 q-14 6 -30 2 z" fill="#F2F2F5" />
+          <path d="M186 224 q8 -3 16 0" stroke="#E5484D" strokeWidth="3" fill="none" />
+        </g>
+      )}
       {m.clutter === "papers" && <g>{[...Array(7)].map((_, n) => <rect key={n} x={100 + n * 22} y={226 - (n % 3) * 3} width="30" height="14" rx="2" fill="#F4F6FA" opacity="0.9" transform={`rotate(${(n % 5) * 6 - 12} ${115 + n * 22} 232)`} />)}</g>}
 
       <g filter={tintFilter((m.tint || {}).seat)}>{m.seat === "stool" && <g><rect x="352" y="284" width="56" height="10" rx="5" fill="#7A4A28" /><rect x="358" y="294" width="8" height="26" fill="#5A3A22" /><rect x="394" y="294" width="8" height="26" fill="#5A3A22" /></g>}</g>
@@ -3215,6 +3530,27 @@ function Room({ r, glow = "#7C5BFF", width = "100%", due = 0, score = 0, trophie
       {m.arcade === "cab" && <g><rect x="596" y="176" width="86" height="128" rx="8" fill="#E5484D" /><rect x="606" y="188" width="66" height="52" rx="4" fill="#15161E" /><rect x="610" y="192" width="58" height="44" fill="#2E4C7A" /><rect x="606" y="248" width="66" height="30" rx="4" fill="#22242E" /><circle cx="624" cy="262" r="7" fill="#F5D34D" /><circle cx="646" cy="262" r="6" fill="#25D0C0" /><circle cx="664" cy="262" r="6" fill="#F177B0" /></g>}
       {m.arcade === "fridge" && <g><rect x="620" y="216" width="66" height="88" rx="8" fill="#F4F6FA" /><rect x="620" y="252" width="66" height="5" fill="#C8CEDC" /><rect x="676" y="230" width="6" height="18" rx="3" fill="#8E96A8" /><rect x="632" y="264" width="16" height="12" rx="2" fill="#E5484D" /></g>}
       {m.arcade === "hoop" && <g><rect x="640" y="60" width="80" height="56" rx="4" fill="#F4F6FA" /><rect x="666" y="96" width="28" height="20" fill="none" stroke="#E5484D" strokeWidth="3" /><path d="M660 116 l40 0 l-6 22 l-28 0 z" fill="none" stroke="#E5484D" strokeWidth="3" /><circle cx="700" cy="290" r="16" fill="#F0651F" /></g>}
+      {m.arcade === "vending" && (
+        <g><rect x="596" y="150" width="96" height="152" rx="8" fill="#1E5A8C" />
+          <rect x="606" y="160" width="60" height="100" fill="#0E2C46" />
+          {[0, 1, 2, 3].map((r) => [0, 1, 2].map((c) => (
+            <rect key={`${r}${c}`} x={612 + c * 18} y={166 + r * 24} width="13" height="18" rx="2"
+              fill={["#E5484D", "#F5D34D", "#4CE0B0", "#FF6EC7"][(r + c) % 4]} />
+          )))}
+          <rect x="672" y="160" width="14" height="60" rx="3" fill="#3E7CB0" />
+          <rect x="606" y="268" width="60" height="24" rx="3" fill="#0A1E30" />
+        </g>
+      )}
+      {m.arcade === "tread" && (
+        <g><rect x="600" y="262" width="110" height="18" rx="6" fill="#2A2E3C" />
+          <rect x="604" y="266" width="102" height="10" fill="#15161E" />
+          <rect x="694" y="186" width="10" height="80" fill="#3E4356" />
+          <rect x="636" y="180" width="68" height="10" rx="4" fill="#3E4356" />
+          <path d="M648 186 q-10 30 4 44 q14 -16 8 -44 z" fill="#E5484D" />
+          <path d="M674 186 q12 26 0 42 q-16 -12 -10 -42 z" fill="#3B6FE0" />
+          <rect x="612" y="276" width="86" height="8" rx="4" fill="#22242E" />
+        </g>
+      )}
       {m.arcade === "drum" && <g><ellipse cx="640" cy="290" rx="42" ry="18" fill="#E5484D" /><rect x="598" y="262" width="84" height="28" fill="#E5484D" /><ellipse cx="640" cy="262" rx="42" ry="16" fill="#F2EDE4" /><circle cx="592" cy="240" r="20" fill="#F2EDE4" opacity="0.9" /><circle cx="690" cy="246" r="16" fill="#F5D34D" opacity="0.9" /></g>}
 
       {m.plant === "small" && <g><path d="M712 300 l6 -34 l32 0 l6 34 z" fill="#C7724A" /><g fill="#4C9A5C"><ellipse cx="734" cy="250" rx="12" ry="20" /><ellipse cx="716" cy="256" rx="10" ry="16" transform="rotate(-28 716 256)" /><ellipse cx="752" cy="256" rx="10" ry="16" transform="rotate(28 752 256)" /></g></g>}
@@ -3222,6 +3558,33 @@ function Room({ r, glow = "#7C5BFF", width = "100%", due = 0, score = 0, trophie
       {m.plant === "cactus" && <g><path d="M716 300 l6 -30 l34 0 l6 30 z" fill="#C7724A" /><g fill="#4C9A5C"><rect x="726" y="196" width="24" height="76" rx="12" /><rect x="704" y="216" width="16" height="32" rx="8" /><rect x="756" y="210" width="16" height="38" rx="8" /></g><circle cx="738" cy="196" r="7" fill="#F177B0" /></g>}
       {m.plant === "tree" && <g><path d="M700 300 l8 -40 l56 0 l8 40 z" fill="#8E6B3A" /><rect x="730" y="150" width="8" height="112" fill="#7A5C34" /><g fill="#3E8C5A">{[[706, 176], [762, 172], [734, 140], [712, 214], [758, 210]].map(([x, y], n) => <ellipse key={n} cx={x} cy={y} rx="26" ry="18" />)}</g></g>}
 
+      {m.plant === "dead" && (
+        <g><path d="M714 300 l6 -32 l32 0 l6 32 z" fill="#8E6B3A" />
+          <path d="M734 268 q-2 -26 -14 -34" stroke="#7A5C34" strokeWidth="5" fill="none" />
+          <path d="M734 268 q4 -22 16 -28" stroke="#7A5C34" strokeWidth="5" fill="none" />
+          <path d="M718 236 q-10 6 -12 16 q10 -2 14 -10 z" fill="#8A7A3A" />
+          <path d="M752 242 q10 4 11 14 q-10 -2 -13 -9 z" fill="#8A7A3A" />
+          <circle cx="726" cy="296" r="3" fill="#6B5A2A" /><circle cx="744" cy="298" r="2.4" fill="#6B5A2A" />
+        </g>
+      )}
+      {m.pet === "pigeon" && (
+        <g><ellipse cx="556" cy="322" rx="26" ry="17" fill="#8E9AB0" />
+          <circle cx="534" cy="304" r="13" fill="#8E9AB0" />
+          <circle cx="529" cy="302" r="3" fill="#E5484D" />
+          <path d="M522 304 l-11 3 l11 5 z" fill="#F0A93A" />
+          <path d="M556 312 q16 -6 26 4 q-14 6 -26 2 z" fill="#7A8698" />
+          <path d="M540 338 l0 8 M560 338 l0 8" stroke="#F0A93A" strokeWidth="3" />
+          <ellipse cx="556" cy="286" rx="18" ry="5" fill="#25D0C0" opacity="0.25" />
+        </g>
+      )}
+      {m.pet === "rock" && (
+        <g><ellipse cx="556" cy="330" rx="22" ry="15" fill="#8E96A8" />
+          <ellipse cx="550" cy="324" rx="9" ry="6" fill="#A8B0C0" />
+          <circle cx="548" cy="328" r="2.6" fill="#22242E" /><circle cx="562" cy="328" r="2.6" fill="#22242E" />
+          <path d="M550 336 q6 5 12 0" stroke="#22242E" strokeWidth="2" fill="none" />
+          <rect x="534" y="344" width="44" height="6" rx="3" fill="#5A3A22" />
+        </g>
+      )}
       {m.pet === "duck" && <g><ellipse cx="560" cy="322" rx="18" ry="14" fill="#F5D34D" /><circle cx="548" cy="308" r="11" fill="#F5D34D" /><path d="M538 308 l-10 3 l10 5 z" fill="#F0A93A" /><circle cx="545" cy="305" r="2" fill="#22242E" /></g>}
       {m.pet === "fish" && <g><circle cx="560" cy="310" r="30" fill="#59D8F5" opacity="0.35" /><path d="M534 316 q26 18 52 0 l0 -6 q-26 16 -52 0 z" fill="#2E9BD6" opacity="0.6" /><ellipse cx="556" cy="312" rx="10" ry="6" fill="#F0A93A" /><path d="M546 312 l-8 -5 l0 10 z" fill="#F0A93A" /><rect x="536" y="332" width="48" height="8" rx="4" fill="#2A2140" /></g>}
       {m.pet === "cat" && <g><ellipse cx="556" cy="322" rx="30" ry="16" fill="#8E96A8" /><circle cx="530" cy="308" r="15" fill="#8E96A8" /><path d="M520 298 l-2 -12 l11 6 z" fill="#8E96A8" /><path d="M540 298 l3 -12 l-11 6 z" fill="#8E96A8" /><circle cx="525" cy="308" r="2.5" fill="#22242E" /><circle cx="535" cy="308" r="2.5" fill="#22242E" /><path d="M584 320 q18 -6 12 -26" stroke="#8E96A8" strokeWidth="7" fill="none" strokeLinecap="round" /></g>}
@@ -4213,6 +4576,45 @@ function decodeSave(code) {
 /* ------------------------------------------------------------------ */
 
 const INTRO_CSS = `
+.iwrap{position:relative;min-height:70vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.ibg{position:absolute;inset:0;background:
+  radial-gradient(60% 40% at 50% 38%, var(--glow) 0%, transparent 70%),
+  radial-gradient(40% 30% at 18% 78%, var(--a4) 0%, transparent 72%),
+  radial-gradient(40% 30% at 82% 22%, var(--a3) 0%, transparent 72%);
+  opacity:.35;animation:breathe 6s ease-in-out infinite;}
+@keyframes breathe{0%,100%{opacity:.28;transform:scale(1)}50%{opacity:.45;transform:scale(1.06)}}
+.icard{position:absolute;border-radius:16px;padding:14px;display:flex;align-items:center;
+  justify-content:center;text-align:center;line-height:1.35;
+  background:linear-gradient(150deg,var(--panel2),var(--panel));
+  border:1px solid var(--line);
+  box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter:blur(6px);}
+.imark{position:relative;font-family:var(--disp),sans-serif;font-weight:800;letter-spacing:-.03em;
+  display:inline-flex;align-items:flex-start;}
+.iltr{display:inline-block;
+  background:linear-gradient(100deg,var(--text) 20%,var(--a3) 42%,var(--a4) 58%,var(--text) 78%);
+  background-size:320% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:rise .7s cubic-bezier(.2,.9,.3,1.1) both, sheen 2.4s ease-in-out 1s both;
+  filter:drop-shadow(0 6px 24px rgba(107,227,255,.28));}
+@keyframes rise{from{opacity:0;transform:translateY(38px) rotate(6deg) scale(.86);filter:blur(6px)}
+  to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes sheen{from{background-position:130% 0}to{background-position:-50% 0}}
+.ispark{display:inline-block;font-size:.3em;margin-left:.06em;margin-top:.12em;color:var(--a3);
+  animation:pop .5s cubic-bezier(.2,1.5,.4,1) both, twinkle 2.4s ease-in-out 1s infinite;}
+@keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.82)}}
+.itag{color:var(--dim);margin-top:16px;font-size:12px;letter-spacing:.24em;text-transform:uppercase;
+  font-weight:700;animation:titleIn .8s ease .75s both;}
+.iline{height:2px;width:0;margin:18px auto 0;border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--a3),var(--a4),transparent);
+  box-shadow:0 0 18px var(--a3);animation:widen 1s cubic-bezier(.2,.9,.3,1) .5s both;}
+@keyframes widen{to{width:240px}}
+.ibrack{position:absolute;width:26px;height:26px;border:2px solid var(--a3);opacity:.5;
+  animation:brack .6s ease .1s both;}
+@keyframes brack{from{opacity:0;transform:scale(1.4)}to{opacity:.5;transform:none}}
+.imote{position:absolute;border-radius:50%;background:var(--a3);
+  animation:mote linear infinite;}
+@keyframes mote{from{transform:translateY(20px);opacity:0}
+  35%{opacity:.75}to{transform:translateY(-120px);opacity:0}}
 @keyframes flyIn{from{opacity:0;transform:translate(var(--fx),var(--fy)) rotate(var(--fr)) scale(.6)}to{opacity:1;transform:none}}
 @keyframes flipCard{0%,40%{transform:rotateY(0)}55%,100%{transform:rotateY(180deg)}}
 @keyframes stackUp{from{opacity:0;transform:translateY(40px) scale(.9)}to{opacity:1;transform:none}}
@@ -4227,58 +4629,86 @@ function Intro({ terms, onDone }) {
   done.current = onDone;
   useEffect(() => {
     const ts = [
-      setTimeout(() => setBeat(1), 1000),
-      setTimeout(() => setBeat(2), 2000),
-      setTimeout(() => done.current(), 3500),
+      setTimeout(() => setBeat(1), 1150),   /* cards flip to their terms */
+      setTimeout(() => setBeat(2), 2150),   /* cards sweep away */
+      setTimeout(() => setBeat(3), 2750),   /* wordmark, on its own */
+      setTimeout(() => done.current(), 4900),
     ];
     return () => ts.forEach(clearTimeout);
   }, []);
 
   const picks = useMemo(() => shuffle(terms && terms.length ? terms : SAMPLE_TERMS).slice(0, 4), [terms]);
   const lanes = [
-    { x: -186, y: -26, r: -9, d: 0 },
-    { x: -62, y: 14, r: -3, d: 0.09 },
-    { x: 62, y: 14, r: 3, d: 0.18 },
-    { x: 186, y: -26, r: 9, d: 0.27 },
+    { x: -196, y: -30, r: -10, d: 0 },
+    { x: -66, y: 16, r: -3, d: 0.1 },
+    { x: 66, y: 16, r: 3, d: 0.2 },
+    { x: 196, y: -30, r: 10, d: 0.3 },
   ];
+  const letters = "Recall".split("");
 
   return (
-    <div style={{ position: "relative", minHeight: 460, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+    <div className="iwrap">
       <style>{INTRO_CSS}</style>
+      <div className="ibg" />
 
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {picks.map((c, n) => (
-          <div
-            key={c.t + n}
-            className="panel"
-            style={{
-              position: "absolute", width: 132, minHeight: 168, borderRadius: 14,
-              padding: 14, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center",
-              transform: `translate(${lanes[n].x}px, ${lanes[n].y}px) rotate(${lanes[n].r}deg)`,
-              animation: `flyIn .8s cubic-bezier(.2,.9,.3,1.05) ${lanes[n].d}s both`,
-              "--fx": `${lanes[n].x * 1.9}px`, "--fy": "120px", "--fr": `${lanes[n].r * 5}deg`,
-              opacity: beat >= 2 ? 0 : beat >= 1 ? 0.5 : 1,
-              transition: "opacity .6s ease",
-              fontSize: 13, lineHeight: 1.35,
-            }}
-          >
-            <span className={beat >= 1 ? "disp" : "dim"} style={{ fontSize: beat >= 1 ? 17 : 13 }}>
-              {beat >= 1 ? c.t : c.d}
-            </span>
+      {[...Array(9)].map((_, n) => (
+        <span key={n} className="imote" style={{
+          left: `${8 + n * 10}%`, bottom: "22%",
+          width: n % 3 === 0 ? 4 : 2.5, height: n % 3 === 0 ? 4 : 2.5,
+          background: ["var(--a3)", "var(--a4)", "var(--a1)"][n % 3],
+          animationDuration: `${4.5 + (n % 4)}s`, animationDelay: `${n * 0.45}s`,
+        }} />
+      ))}
+
+      {[["top", "left"], ["top", "right"], ["bottom", "left"], ["bottom", "right"]].map(([v, h]) => (
+        <span key={v + h} className="ibrack" style={{
+          [v]: 18, [h]: 18,
+          borderTopWidth: v === "top" ? 2 : 0, borderBottomWidth: v === "bottom" ? 2 : 0,
+          borderLeftWidth: h === "left" ? 2 : 0, borderRightWidth: h === "right" ? 2 : 0,
+        }} />
+      ))}
+
+      {beat < 3 && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {picks.map((c, n) => {
+            const gone = beat >= 2;
+            return (
+              <div key={c.t + n} className="icard" style={{
+                width: 140, minHeight: 176,
+                transform: gone
+                  ? `translate(${lanes[n].x * 2.4}px, ${lanes[n].y - 90}px) rotate(${lanes[n].r * 3}deg) scale(.82)`
+                  : `translate(${lanes[n].x}px, ${lanes[n].y}px) rotate(${lanes[n].r}deg)`,
+                animation: gone ? "none" : `flyIn .85s cubic-bezier(.16,.9,.3,1.03) ${lanes[n].d}s both`,
+                "--fx": `${lanes[n].x * 1.9}px`, "--fy": "130px", "--fr": `${lanes[n].r * 5}deg`,
+                opacity: gone ? 0 : 1,
+                transition: "transform .6s cubic-bezier(.5,0,.75,0), opacity .5s ease",
+                transitionDelay: `${n * 0.05}s`,
+                fontSize: 13,
+              }}>
+                <span className={beat >= 1 ? "disp" : "dim"} style={{ fontSize: beat >= 1 ? 17 : 13 }}>
+                  {beat >= 1 ? c.t : c.d}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {beat >= 3 && (
+        <div style={{ position: "relative", textAlign: "center", zIndex: 5 }}>
+          <div className="imark" style={{ fontSize: "clamp(62px,16vw,140px)", lineHeight: 1 }}>
+            {letters.map((ch, n) => (
+              <span key={n} className="iltr" style={{ animationDelay: `${n * 0.07}s` }}>{ch}</span>
+            ))}
+            <span className="ispark" style={{ animationDelay: `${letters.length * 0.07 + 0.15}s` }}>✦</span>
           </div>
-        ))}
-      </div>
+          <div className="iline" />
+          <div className="itag">Study · Play · Make it yours</div>
+        </div>
+      )}
 
-      <div style={{ position: "relative", textAlign: "center", zIndex: 5 }}>
-        {beat >= 2 && (
-          <div style={{ animation: "titleIn .7s cubic-bezier(.2,.9,.3,1) both" }}>
-            <div className="disp" style={{ fontSize: "clamp(58px,15vw,124px)", lineHeight: 1 }}>Recall</div>
-            <div className="dim" style={{ marginTop: 6, animation: "titleIn .6s ease .25s both" }}>study, but make it a game</div>
-          </div>
-        )}
-      </div>
-
-      <button onClick={() => done.current()} className="dim text-sm" style={{ position: "absolute", right: 14, bottom: 12 }}>Skip</button>
+      <button onClick={() => done.current()} className="dim text-sm"
+        style={{ position: "absolute", right: 16, bottom: 14, letterSpacing: ".06em" }}>Skip</button>
     </div>
   );
 }
@@ -4608,6 +5038,28 @@ function rollWeek(prog) {
 }
 
 const weeklyReady = (prog) => weeklyPicks().filter((c) => { const s = weeklyState(prog, c); return s.done && !s.claimed; }).length;
+
+/* ------------------------------------------------------------------ */
+/*  Today's goals                                                      */
+/* ------------------------------------------------------------------ */
+
+const blankDay = () => ({ day: todayStr(), cards: 0, rounds: 0, fixed: 0, claimed: false });
+
+function dayOf(prog) {
+  const d = prog.daily || {};
+  return d.day === todayStr() ? { ...blankDay(), ...d } : blankDay();
+}
+
+function todayGoals(prog) {
+  const d = dayOf(prog);
+  return [
+    { id: "cards", name: "Study flashcards", have: Math.min(d.cards, 50), goal: 50 },
+    { id: "fixed", name: "Review mistakes", have: Math.min(d.fixed, 20), goal: 20 },
+    { id: "round", name: "Finish a session", have: Math.min(d.rounds, 1), goal: 1 },
+  ];
+}
+
+const goalsDone = (prog) => todayGoals(prog).filter((g) => g.have >= g.goal).length;
 
 /* ------------------------------------------------------------------ */
 /*  Goals screen                                                       */
@@ -5131,6 +5583,7 @@ function Builder({ onBuilt, onManual, onSettings }) {
 
   return (
     <div className="panel rounded-2xl p-5">
+      <AIBanner what="Smarter card writing" onConnect={onSettings} />
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {[["file", "Upload a file"], ["text", "Paste text"], ["video", "From a video"], ["code", "Deck code"]].map(([id, label]) => (
           <button key={id} onClick={() => { setTab(id); setErr(""); }}
@@ -5233,6 +5686,44 @@ const priceLabel = (it) => {
   return `${it.price}`;
 };
 
+function useHistory(initial) {
+  const [past, setPast] = useState([]);
+  const [now, setNow] = useState(initial);
+  const [future, setFuture] = useState([]);
+
+  const set = (next) => {
+    setPast((p) => [...p.slice(-40), now]);
+    setNow(next);
+    setFuture([]);
+  };
+  const undo = () => {
+    if (!past.length) return;
+    setFuture((f) => [now, ...f]);
+    setNow(past[past.length - 1]);
+    setPast((p) => p.slice(0, -1));
+  };
+  const redo = () => {
+    if (!future.length) return;
+    setPast((p) => [...p, now]);
+    setNow(future[0]);
+    setFuture((f) => f.slice(1));
+  };
+  return { now, set, undo, redo, canUndo: past.length > 0, canRedo: future.length > 0 };
+}
+
+function UndoBar({ h, onReset }) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <button onClick={h.undo} disabled={!h.canUndo} className="btn rounded-xl px-4 py-2 text-sm"
+        style={!h.canUndo ? { opacity: .4 } : undefined} aria-label="Undo">↶ Undo</button>
+      <button onClick={h.redo} disabled={!h.canRedo} className="btn rounded-xl px-4 py-2 text-sm"
+        style={!h.canRedo ? { opacity: .4 } : undefined} aria-label="Redo">↷ Redo</button>
+      <span style={{ flex: 1 }} />
+      <button onClick={onReset} className="dim text-xs">Start over</button>
+    </div>
+  );
+}
+
 function ItemGrid({ slot, current, prog, onPick, onBuy, onPeek, peek, questNames }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -5265,7 +5756,9 @@ function ItemGrid({ slot, current, prog, onPick, onBuy, onPeek, peek, questNames
 }
 
 function CharStudio({ prog, onSave, onBuy, onQuit, firstRun }) {
-  const [a, setA] = useState({ ...DEFAULT_AVATAR, ...(prog.avatar || {}) });
+  const h = useHistory({ ...DEFAULT_AVATAR, ...(prog.avatar || {}) });
+  const a = h.now;
+  const setA = (fn) => h.set(typeof fn === "function" ? fn(h.now) : fn);
   const [peek, setPeek] = useState(null);
   const [tab, setTab] = useState(CHAR_SLOTS[0].key);
   const slot = CHAR_SLOTS.find((s) => s.key === tab);
@@ -5286,20 +5779,15 @@ function CharStudio({ prog, onSave, onBuy, onQuit, firstRun }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 style={{ fontSize: "clamp(28px,6vw,44px)" }}>{firstRun ? "Make your guy" : "Your character"}</h1>
-          <div className="dim text-sm">
-            {firstRun ? "Change any of it later, whenever" : `${prog.coins.toLocaleString()} coins · ${prog.tickets || 0} tickets`}
-          </div>
-        </div>
-        {!firstRun && <button onClick={onQuit} className="btn rounded-lg px-3 py-1 text-sm">Back</button>}
-      </div>
+      <PageHead eyebrow={firstRun ? "First things first" : "Wardrobe"}
+        title={firstRun ? "Make your guy" : "Your character"}
+        sub={firstRun ? "Change any of it later, whenever" : `${prog.coins.toLocaleString()} coins · ${prog.tickets || 0} tickets`} />
 
       <div className="panel2 rounded-2xl p-4 mb-3 flex flex-col items-center justify-center">
         <Avatar a={shown} size={210} />
         {titleOf(shown) && <div className="disp mt-2" style={{ fontSize: 20, color: "var(--a1)" }}>{titleOf(shown)}</div>}
       </div>
+      <UndoBar h={h} onReset={() => setA({ ...DEFAULT_AVATAR })} />
       <button onClick={randomise} className="btn rounded-lg px-3 py-1 text-sm mb-4">Shuffle what I own</button>
 
       <div className="scroller flex gap-2 mb-3 pb-1">
@@ -5352,7 +5840,9 @@ function CharStudio({ prog, onSave, onBuy, onQuit, firstRun }) {
 }
 
 function RoomStudio({ prog, due, score, onSave, onBuy, onQuit }) {
-  const [r, setR] = useState({ ...DEFAULT_ROOM, ...(prog.room || {}) });
+  const h = useHistory({ ...DEFAULT_ROOM, ...(prog.room || {}) });
+  const r = h.now;
+  const setR = (fn) => h.set(typeof fn === "function" ? fn(h.now) : fn);
   const [peek, setPeek] = useState(null);
   const [tab, setTab] = useState(ROOM_SLOTS[0].key);
   const slot = ROOM_SLOTS.find((s) => s.key === tab);
@@ -5378,6 +5868,8 @@ function RoomStudio({ prog, due, score, onSave, onBuy, onQuit }) {
           <Avatar a={prog.avatar} fluid />
         </div>
       </div>
+
+      <UndoBar h={h} onReset={() => setR({ ...DEFAULT_ROOM })} />
 
       <div className="scroller flex gap-2 mb-3 pb-1">
         {ROOM_SLOTS.map((s) => (
@@ -5428,6 +5920,25 @@ function RoomStudio({ prog, due, score, onSave, onBuy, onQuit }) {
 
 /* ------------------------------------------------------------------ */
 /*  Shop (look and sound)                                              */
+/* ------------------------------------------------------------------ */
+/*  Nudge shown where Claude is needed but missing                     */
+/* ------------------------------------------------------------------ */
+
+function AIBanner({ onConnect, what }) {
+  if (aiReady()) return null;
+  return (
+    <div className="panel2 rounded-2xl p-4 mb-4" style={{ borderColor: "var(--a1)" }}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="font-semibold">{what} needs Claude</div>
+          <div className="dim text-xs mt-1">One key, pasted once, stays in this browser.</div>
+        </div>
+        <button onClick={onConnect} className="btn-go rounded-lg px-3 py-1 text-sm" style={{ whiteSpace: "nowrap" }}>Connect</button>
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Settings — connecting Claude                                       */
 /* ------------------------------------------------------------------ */
@@ -5503,6 +6014,598 @@ function Settings({ onQuit }) {
           character, the room, the shop and mastery are all fully offline.
         </p>
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Rich text — renders the light markdown Claude sends back           */
+/* ------------------------------------------------------------------ */
+
+function RichText({ children, size = 14 }) {
+  const raw = String(children || "");
+  const blocks = raw.split(/\n{2,}/);
+
+  const inline = (line, key) => {
+    const bits = line.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+    return (
+      <span key={key}>
+        {bits.map((b, n) =>
+          b.startsWith("**") && b.endsWith("**")
+            ? <strong key={n}>{b.slice(2, -2)}</strong>
+            : <span key={n}>{b.replace(/\*/g, "")}</span>
+        )}
+      </span>
+    );
+  };
+
+  return (
+    <div style={{ fontSize: size, lineHeight: 1.55 }}>
+      {blocks.map((block, i) => {
+        const lines = block.split("\n").filter((l) => l.trim());
+        const bulleted = lines.length > 0 && lines.every((l) => /^\s*[-*•]\s+/.test(l));
+        if (bulleted) {
+          return (
+            <ul key={i} style={{ margin: "0 0 12px", paddingLeft: 18 }}>
+              {lines.map((l, n) => (
+                <li key={n} style={{ marginBottom: 5 }}>{inline(l.replace(/^\s*[-*•]\s+/, ""), n)}</li>
+              ))}
+            </ul>
+          );
+        }
+        const heading = lines.length === 1 && /^#{1,3}\s+/.test(lines[0]);
+        if (heading) {
+          return (
+            <div key={i} className="font-semibold" style={{ fontSize: size + 3, margin: "14px 0 6px" }}>
+              {inline(lines[0].replace(/^#{1,3}\s+/, ""), 0)}
+            </div>
+          );
+        }
+        return (
+          <p key={i} style={{ margin: "0 0 12px" }}>
+            {lines.map((l, n) => <span key={n}>{inline(l, n)}{n < lines.length - 1 ? " " : ""}</span>)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Dictation                                                          */
+/* ------------------------------------------------------------------ */
+
+const TRANSCRIBE_URL = "/api/transcribe";
+const SEG_MS = 150000;           /* upload every two and a half minutes */
+
+function speechSupport() {
+  if (typeof window === "undefined") return null;
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+
+/* Records audio and posts it up in segments. For devices whose browser
+   can't transcribe on its own, which mostly means iPhones. */
+function useAudioNotes() {
+  const [text, setText] = useState("");
+  const [on, setOn] = useState(false);
+  const [busy, setBusy] = useState(0);
+  const [err, setErr] = useState("");
+  const rec = useRef(null);
+  const chunks = useRef([]);
+  const stream = useRef(null);
+  const timer = useRef(null);
+  const textRef = useRef("");
+
+  const mimeFor = () => {
+    const want = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"];
+    for (const m of want) {
+      if (window.MediaRecorder && window.MediaRecorder.isTypeSupported && window.MediaRecorder.isTypeSupported(m)) return m;
+    }
+    return "";
+  };
+
+  const send = useCallback(async (blob, mime) => {
+    if (!blob || blob.size < 2000) return;
+    setBusy((n) => n + 1);
+    try {
+      const b64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(String(r.result).split(",")[1]);
+        r.onerror = () => rej(new Error("read failed"));
+        r.readAsDataURL(blob);
+      });
+      const out = await fetch(TRANSCRIBE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audio: b64, mime }),
+      });
+      if (!out.ok) {
+        const e = await out.json().catch(() => ({}));
+        throw new Error(e.error || "That segment didn't go through.");
+      }
+      const data = await out.json();
+      if (data.text) { textRef.current += data.text.trim() + " "; setText(textRef.current); }
+    } catch (e) {
+      setErr(e.message || "A segment didn't go through.");
+    } finally {
+      setBusy((n) => Math.max(0, n - 1));
+    }
+  }, []);
+
+  const flush = useCallback((mime) => {
+    if (!chunks.current.length) return;
+    const blob = new Blob(chunks.current, { type: mime });
+    chunks.current = [];
+    send(blob, mime);
+  }, [send]);
+
+  const start = useCallback(async () => {
+    setErr("");
+    if (!navigator.mediaDevices || !window.MediaRecorder) { setErr("This browser can't record audio."); return; }
+    try {
+      stream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mime = mimeFor();
+      const r = new window.MediaRecorder(stream.current, mime ? { mimeType: mime } : undefined);
+      rec.current = r;
+      r.ondataavailable = (e) => { if (e.data && e.data.size) chunks.current.push(e.data); };
+      r.start(4000);
+      setOn(true);
+      timer.current = setInterval(() => flush(mime || "audio/webm"), SEG_MS);
+    } catch (e) {
+      setErr(e && e.name === "NotAllowedError"
+        ? "Microphone access was blocked. Allow it in your browser settings."
+        : "Couldn't open the microphone.");
+    }
+  }, [flush]);
+
+  const stop = useCallback(() => {
+    const mime = rec.current ? rec.current.mimeType : "audio/webm";
+    try { if (rec.current && rec.current.state !== "inactive") rec.current.stop(); } catch (e) {}
+    try { if (stream.current) stream.current.getTracks().forEach((t) => t.stop()); } catch (e) {}
+    if (timer.current) clearInterval(timer.current);
+    setOn(false);
+    setTimeout(() => flush(mime), 300);
+  }, [flush]);
+
+  const reset = useCallback(() => { textRef.current = ""; setText(""); chunks.current = []; }, []);
+
+  useEffect(() => () => {
+    if (timer.current) clearInterval(timer.current);
+    try { if (stream.current) stream.current.getTracks().forEach((t) => t.stop()); } catch (e) {}
+  }, []);
+
+  return {
+    text, on, busy, err, start, stop, reset, clear: reset,
+    supported: typeof window !== "undefined" && Boolean(window.MediaRecorder && navigator.mediaDevices),
+  };
+}
+
+function useDictation() {
+  const Engine = typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition);
+  const [on, setOn] = useState(false);
+  const [text, setText] = useState("");
+  const [live, setLive] = useState("");
+  const [err, setErr] = useState("");
+  const rec = useRef(null);
+  const want = useRef(false);
+
+  const stop = useCallback(() => {
+    want.current = false;
+    setOn(false);
+    setLive("");
+    try { if (rec.current) rec.current.stop(); } catch (e) {}
+  }, []);
+
+  const start = useCallback(() => {
+    if (!Engine) { setErr("This browser can't listen. Chrome, Edge or Safari can."); return; }
+    setErr("");
+    want.current = true;
+    const build = () => {
+      const r = new Engine();
+      r.continuous = true;
+      r.interimResults = true;
+      r.lang = (typeof navigator !== "undefined" && navigator.language) || "en-US";
+      r.onresult = (e) => {
+        let add = "", interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const chunk = e.results[i][0].transcript;
+          if (e.results[i].isFinal) add += chunk + " ";
+          else interim += chunk;
+        }
+        if (add) setText((t) => (t + add).slice(-60000));
+        setLive(interim);
+      };
+      r.onerror = (e) => {
+        if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+          setErr("Microphone blocked. Allow it in your browser's site settings.");
+          want.current = false;
+          setOn(false);
+        } else if (e.error === "audio-capture") {
+          setErr("No microphone found.");
+          want.current = false;
+          setOn(false);
+        }
+      };
+      r.onend = () => {
+        /* browsers cut the stream on silence — pick it straight back up */
+        if (want.current) { try { r.start(); } catch (e) { setTimeout(() => { try { r.start(); } catch (e2) {} }, 400); } }
+        else setOn(false);
+      };
+      return r;
+    };
+    try {
+      rec.current = build();
+      rec.current.start();
+      setOn(true);
+    } catch (e) {
+      setErr("Couldn't start listening. Try again.");
+    }
+  }, [Engine]);
+
+  useEffect(() => () => { want.current = false; try { if (rec.current) rec.current.stop(); } catch (e) {} }, []);
+
+  return { supported: Boolean(Engine), on, text, live, err, start, stop, clear: () => { setText(""); setLive(""); } };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Notes                                                              */
+/* ------------------------------------------------------------------ */
+
+const isPro = (prog) => Boolean(prog.pro);
+const PRO_TICKETS = 3;
+const PRO_COINS = 7000;
+
+async function makeNotes(transcript, title) {
+  const body = transcript.slice(0, 14000);
+  return askClaude([{
+    role: "user",
+    content:
+      `Here is a rough transcript of a lecture or study session. It has no punctuation to speak of and ` +
+      `probably has mistakes from the speech recogniser — read through those.\n\n` +
+      `TRANSCRIPT:\n${body}\n\n` +
+      `Write study notes${title ? ` titled "${title}"` : ""} in this shape, using markdown:\n` +
+      `A two sentence summary of what was covered. Then "## Key points" with 4-8 bullets. ` +
+      `Then "## Terms" with each term and a short definition as bullets in the form **Term** — meaning. ` +
+      `Then "## Worth checking" with 1-3 bullets on anything that sounded garbled or unclear. ` +
+      `Stay under 400 words and keep it plain.`,
+  }]);
+}
+
+function Recorder({ prog, onSave, onDeck, onUnlock, onQuit }) {
+  const live = useDictation();
+  const cloud = useAudioNotes();
+  const [engine, setEngine] = useState(() => (speechSupport() ? "live" : "cloud"));
+  const d = engine === "live"
+    ? live
+    : { text: cloud.text, live: "", on: cloud.on, err: cloud.err, start: cloud.start, stop: cloud.stop,
+        reset: cloud.reset, supported: cloud.supported };
+  const [secs, setSecs] = useState(0);
+  const [title, setTitle] = useState("");
+  const [notes, setNotes] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const endRef = useRef(null);
+
+  useEffect(() => {
+    if (!d.on) return;
+    const id = setInterval(() => setSecs((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, [d.on]);
+
+  useEffect(() => { if (endRef.current) endRef.current.scrollTop = endRef.current.scrollHeight; }, [d.text, d.live]);
+
+  const engines = [
+    { id: "live", name: "Live", ok: Boolean(speechSupport()), note: "Words appear as they're said. Chrome and Edge." },
+    { id: "cloud", name: "Upload", ok: cloud.supported, note: "Records audio and sends it up in chunks. Works on iPhone." },
+  ];
+
+  const words = d.text.trim() ? d.text.trim().split(/\s+/).length : 0;
+
+  const write = async () => {
+    setBusy(true); setErr("");
+    try {
+      const out = await makeNotes(d.text, title);
+      setNotes(out);
+    } catch (e) {
+      setErr(e instanceof NoAI
+        ? "Claude isn't connected. Open Settings to fix that — your transcript is safe here meanwhile."
+        : "Couldn't write the notes. Try again.");
+    } finally { setBusy(false); }
+  };
+
+  if (!isPro(prog)) {
+    const canTickets = (prog.tickets || 0) >= PRO_TICKETS;
+    const canCoins = prog.coins >= PRO_COINS;
+    return (
+      <div>
+        <TopBar label="Back" left="Lecture recorder" right="" onQuit={onQuit} />
+        <div className="hero mb-5">
+          <div className="disp" style={{ fontSize: 30, lineHeight: 1.1 }}>Record the lecture.<br />Get the notes.</div>
+          <p style={{ opacity: .85, marginTop: 10, lineHeight: 1.5, fontSize: 15 }}>
+            Hit record at the start of class. It listens, keeps the transcript, and turns it into
+            proper notes — summary, key points, every term defined — then builds a deck out of it.
+          </p>
+        </div>
+
+        <div className="card2 p-5 mb-4">
+          <div className="font-semibold mb-2">What you get</div>
+          <ul className="dim" style={{ fontSize: 14, lineHeight: 1.7, paddingLeft: 18, margin: 0 }}>
+            <li>Live transcript while someone's talking</li>
+            <li>Notes written up automatically when you stop</li>
+            <li>A deck built from the same recording, one tap</li>
+            <li>Everything saved, nothing uploaded anywhere</li>
+          </ul>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button onClick={() => onUnlock("tickets")} disabled={!canTickets}
+            className="btn-go rounded-xl py-3" style={!canTickets ? { opacity: .45 } : undefined}>
+            Unlock · {PRO_TICKETS}🎟
+          </button>
+          <button onClick={() => onUnlock("coins")} disabled={!canCoins}
+            className="btn rounded-xl py-3" style={!canCoins ? { opacity: .45 } : undefined}>
+            Unlock · {PRO_COINS.toLocaleString()} coins
+          </button>
+        </div>
+        <p className="dim text-xs mt-3">
+          You hold {(prog.coins || 0).toLocaleString()} coins and {prog.tickets || 0} tickets.
+          Tickets come from mastering decks and beating the hard modes.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <TopBar
+        label="Back"
+        left={d.on ? <span style={{ color: "var(--bad)" }}>● recording · {stamp(secs)}</span> : `${words} words`}
+        right={<span className="dim text-sm">{d.on ? "listening" : secs ? stamp(secs) : ""}</span>}
+        onQuit={() => { d.stop(); onQuit(); }}
+      />
+
+      <div className="card2 p-4 mb-4">
+        <div className="dim text-xs mb-2">How should it listen?</div>
+        <div className="seg" style={{ marginBottom: 10 }}>
+          {engines.map((e) => (
+            <button key={e.id} onClick={() => !d.on && e.ok && setEngine(e.id)}
+              className={engine === e.id ? "on" : ""}
+              style={!e.ok ? { opacity: .4 } : undefined}>
+              {e.name}
+            </button>
+          ))}
+        </div>
+        <div className="dim text-xs" style={{ lineHeight: 1.5 }}>
+          {(engines.find((e) => e.id === engine) || {}).note}
+          {engine === "cloud" && cloud.busy > 0 && (
+            <span style={{ color: "var(--a3)" }}> · sending {cloud.busy} segment{cloud.busy === 1 ? "" : "s"}…</span>
+          )}
+        </div>
+      </div>
+
+      {!d.supported && (
+        <div className="card2 p-4 mb-4" style={{ borderColor: "var(--bad)" }}>
+          <div className="font-semibold mb-1" style={{ color: "var(--bad)" }}>This device can't do that one</div>
+          <p className="dim text-sm">Try the other option above, or paste a transcript on the Decks tab.</p>
+        </div>
+      )}
+
+      <div className="card2 p-4 mb-4">
+        <input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 60))}
+          placeholder="What's this lecture? (optional)" className="field rounded-xl px-4 py-3 w-full mb-3" />
+
+        <div
+          ref={endRef}
+          className="field rounded-xl p-4 mb-3"
+          style={{ height: 220, overflowY: "auto", fontSize: 14, lineHeight: 1.6, whiteSpace: "pre-wrap" }}
+        >
+          {d.text || <span className="dim">
+            Nothing yet. Hit record and start talking, or put your phone near the lecturer.
+            {engine === "cloud" ? " Words arrive in batches every couple of minutes." : ""}
+          </span>}
+          {d.live && <span className="dim"> {d.live}</span>}
+        </div>
+
+        {d.err && <div className="text-sm mb-3" style={{ color: "var(--bad)" }}>{d.err}</div>}
+
+        <div className="grid grid-cols-2 gap-3">
+          {d.on ? (
+            <button onClick={d.stop} className="btn rounded-xl py-3" style={{ borderColor: "var(--bad)", color: "var(--bad)" }}>
+              Stop
+            </button>
+          ) : (
+            <button onClick={d.start} disabled={!d.supported} className="btn-go rounded-xl py-3"
+              style={!d.supported ? { opacity: .45 } : undefined}>
+              {words ? "Keep going" : "Start recording"}
+            </button>
+          )}
+          <button onClick={() => { (d.clear || d.reset)(); setNotes(""); setSecs(0); }} disabled={!words} className="btn rounded-xl py-3"
+            style={!words ? { opacity: .45 } : undefined}>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      {words > 30 && !d.on && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <button onClick={write} disabled={busy} className="btn-go rounded-xl py-3">
+            {busy ? "Writing them up…" : "Write my notes"}
+          </button>
+          <button onClick={() => onDeck(d.text, title)} className="btn rounded-xl py-3">Build a deck from this</button>
+        </div>
+      )}
+
+      {err && <div className="text-sm mb-3" style={{ color: "var(--bad)" }}>{err}</div>}
+
+      {notes && (
+        <div className="card2 p-5 mb-4 fadein">
+          <div className="font-semibold mb-2">{title || "Your notes"}</div>
+          <RichText>{notes}</RichText>
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <button onClick={() => { onSave({ title: title || "Lecture notes", body: notes, transcript: d.text }); }}
+              className="btn-go rounded-xl py-3">Save these notes</button>
+            <button onClick={() => onDeck(d.text, title)} className="btn rounded-xl py-3">Make a deck too</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Notes({ prog, onOpen, onDelete, onRecord, onDeck, onQuit }) {
+  const list = prog.notes || [];
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 style={{ fontSize: "clamp(28px,6vw,44px)" }}>Notes</h1>
+          <div className="dim text-sm">{list.length ? `${list.length} saved` : "Nothing saved yet"}</div>
+        </div>
+        <button onClick={onQuit} className="btn rounded-lg px-3 py-1 text-sm">Back</button>
+      </div>
+
+      <button onClick={onRecord} className="bigbtn mb-5">Record a lecture</button>
+
+      <div className="flex flex-col gap-3">
+        {list.map((n) => (
+          <div key={n.id} className="card2 p-4">
+            <button onClick={() => onOpen(n)} className="text-left w-full">
+              <div className="font-semibold" style={{ fontSize: 16 }}>{n.title}</div>
+              <div className="dim text-sm mt-1">{n.date} · {n.body.split(/\s+/).length} words</div>
+            </button>
+            <div className="flex items-center gap-2 mt-3">
+              <button onClick={() => onDeck(n.transcript || n.body, n.title)}
+                className="btn-go rounded-lg px-3 py-1 text-sm">Make a deck</button>
+              <button onClick={() => onOpen(n)} className="btn rounded-lg px-3 py-1 text-sm">Read</button>
+              <span style={{ flex: 1 }} />
+              <button onClick={() => onDelete(n.id)} className="dim text-xs">Delete</button>
+            </div>
+          </div>
+        ))}
+        {!list.length && (
+          <div className="card2 p-5 dim" style={{ fontSize: 14, lineHeight: 1.6 }}>
+            Record a class and the notes land here. Works with your phone on the desk, or talking
+            through something yourself to see if you actually know it.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NoteView({ note, onDeck, onQuit }) {
+  const [showRaw, setShowRaw] = useState(false);
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 style={{ fontSize: "clamp(24px,5vw,36px)" }}>{note.title}</h1>
+          <div className="dim text-sm">{note.date}</div>
+        </div>
+        <button onClick={onQuit} className="btn rounded-lg px-3 py-1 text-sm">Back</button>
+      </div>
+
+      <div className="card2 p-5 mb-4">
+        <RichText size={15}>{note.body}</RichText>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <button onClick={() => onDeck(note.transcript || note.body, note.title)} className="btn-go rounded-xl py-3">
+          Build a deck from this
+        </button>
+        {note.transcript && (
+          <button onClick={() => setShowRaw(!showRaw)} className="btn rounded-xl py-3">
+            {showRaw ? "Hide transcript" : "Show transcript"}
+          </button>
+        )}
+      </div>
+
+      {showRaw && (
+        <div className="field rounded-xl p-4" style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+          {note.transcript}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Leaderboard                                                        */
+/* ------------------------------------------------------------------ */
+
+const boardOn = () => typeof window !== "undefined" && Boolean(window.RECALL_SCORES);
+
+const BOARD_MODES = [
+  { id: "survival", name: "Survival" },
+  { id: "rush", name: "Recall Rush" },
+  { id: "boss", name: "Boss Exam" },
+  { id: "ladder", name: "Ladder" },
+  { id: "quiz", name: "Quiz" },
+];
+
+function Board({ prog, onQuit }) {
+  const [mode, setMode] = useState("survival");
+  const [rows, setRows] = useState(null);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    let live = true;
+    setRows(null); setErr("");
+    if (!boardOn()) { setRows([]); return; }
+    window.RECALL_SCORES.top(mode)
+      .then((r) => { if (live) setRows(r); })
+      .catch(() => { if (live) { setRows([]); setErr("Couldn't load the board."); } });
+    return () => { live = false; };
+  }, [mode]);
+
+  return (
+    <div>
+      <PageHead eyebrow="Everyone playing" title="Leaderboard"
+        sub={boardOn() ? "Your best run in each mode, against everyone else's" : "Needs accounts turned on"} />
+
+      <div className="scroller flex gap-2 mb-4 pb-1">
+        {BOARD_MODES.map((m) => (
+          <button key={m.id} onClick={() => setMode(m.id)}
+            className={"chip rounded-full px-4 py-1 text-sm " + (mode === m.id ? "chip-on" : "")}
+            style={{ whiteSpace: "nowrap" }}>{m.name}</button>
+        ))}
+      </div>
+
+      {!boardOn() && (
+        <div className="card2 p-5 dim" style={{ lineHeight: 1.6 }}>
+          The leaderboard runs on the same accounts that sync progress between devices.
+          Once those are switched on, everyone's best run shows up here.
+        </div>
+      )}
+
+      {boardOn() && rows === null && <div className="card2 p-5 dim">Loading…</div>}
+      {err && <div className="text-sm mb-3" style={{ color: "var(--bad)" }}>{err}</div>}
+
+      {boardOn() && rows && rows.length === 0 && (
+        <div className="card2 p-5 dim">Nobody's posted a score here yet. Be first.</div>
+      )}
+
+      {boardOn() && rows && rows.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {rows.map((r) => (
+            <div key={r.user_id + r.rank} className={"card2 p-3 flex items-center gap-3 " + (r.mine ? "eq" : "")}>
+              <span className="disp" style={{
+                fontSize: 18, width: 34, textAlign: "center",
+                color: r.rank === 1 ? "var(--a1)" : r.rank === 2 ? "#C9C9D2" : r.rank === 3 ? "#C77A3A" : "var(--dim)",
+              }}>{r.rank}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="font-semibold" style={{ fontSize: 15 }}>
+                  {r.name}{r.mine ? " · you" : ""}
+                </div>
+                {r.deck && <div className="dim text-xs mt-1" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.deck}</div>}
+              </div>
+              <span className="disp" style={{ fontSize: 17 }}>{(r.score || 0).toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button onClick={onQuit} className="btn rounded-xl py-3 w-full mt-5">Back</button>
     </div>
   );
 }
@@ -5741,14 +6844,8 @@ function Shop({ prog, onBuy, onEquip, onFreeze, onPower, music, onQuit }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <h1 style={{ fontSize: "clamp(28px,6vw,46px)" }}>Item Shop</h1>
-        <div className="flex items-center gap-2">
-          <span className="pill rounded-full px-3 py-1 coin">{(prog.coins || 0).toLocaleString()}</span>
-          <span className="pill rounded-full px-3 py-1 ticket">{prog.tickets || 0}🎟</span>
-          <button onClick={onQuit} className="btn rounded-lg px-3 py-1 text-sm">Back</button>
-        </div>
-      </div>
+      <PageHead eyebrow="Spend it" title="Item Shop"
+        sub={`${(prog.coins || 0).toLocaleString()} coins · ${prog.tickets || 0} tickets`} />
 
       <div className="scroller flex gap-2 mb-5 pb-1">
         {TABS.map(([id, label]) => (
@@ -5987,6 +7084,7 @@ function Pack({ deck, prog, front, onClick }) {
 
 function DeckPicker({ decks, deckId, prog, onSelect, onNew, onEdit, onRemove }) {
   const [shared, setShared] = useState("");
+  const [confirmDel, setConfirmDel] = useState(null);
   const idx = Math.max(0, decks.findIndex((d) => d.id === deckId));
   const deck = decks[idx] || decks[0];
 
@@ -6046,7 +7144,19 @@ function DeckPicker({ decks, deckId, prog, onSelect, onNew, onEdit, onRemove }) 
         <button onClick={onNew} className="btn rounded-lg px-3 py-1 text-sm">New deck</button>
         <button onClick={onEdit} className="btn rounded-lg px-3 py-1 text-sm">Edit cards</button>
         <button onClick={() => { const c = encodeDeck(deck); setShared(c); try { navigator.clipboard.writeText(c); } catch (e) {} }} className="btn rounded-lg px-3 py-1 text-sm">{shared ? "Code copied" : "Share deck"}</button>
-        {!deck.builtin && <button onClick={() => onRemove(deck.id)} className="btn rounded-lg px-3 py-1 text-sm">Remove</button>}
+        {!deck.builtin && (
+          confirmDel === deck.id ? (
+            <>
+              <button onClick={() => { onRemove(deck.id); setConfirmDel(null); }}
+                className="btn rounded-lg px-3 py-1 text-sm" style={{ color: "var(--bad)", borderColor: "var(--bad)" }}>
+                Delete {deck.cards.length} cards
+              </button>
+              <button onClick={() => setConfirmDel(null)} className="btn rounded-lg px-3 py-1 text-sm">Keep it</button>
+            </>
+          ) : (
+            <button onClick={() => setConfirmDel(deck.id)} className="btn rounded-lg px-3 py-1 text-sm">Remove</button>
+          )
+        )}
       </div>
       {shared && (
         <textarea readOnly value={shared} rows={3} onFocus={(e) => e.target.select()}
@@ -6243,11 +7353,12 @@ const PLAY_MODES = MODE_GROUPS.filter((g) => g.id !== "lounge").flatMap((g) => g
 const LOUNGE_MODES = MODE_GROUPS.find((g) => g.id === "lounge").modes;
 
 const ALL_MODES = [...PLAY_MODES, ...LOUNGE_MODES];
+const NAV_SCREENS = ["home", "decks", "study", "char", "room", "shop"];
 const LENGTHS = [10, 20, 0];
 const BLANK_STATS = { rounds: 0, perfect: 0, correct: 0, bestSurvival: 0, modes: [], drift: 0, asks: 0, built: 0, bosses: 0, survivalClears: 0, ladderTops: 0, today: 0, day: "" };
 const BLANK_WALLET = {
   coins: 0, tickets: 0, xp: 0, owned: [], claimed: [], login: { last: "", day: 0 },
-  equip: { theme: "midnight", font: "bricolage", pattern: "none", shape: "soft", sfx: "soft" },
+  equip: { theme: "twilight", font: "bricolage", pattern: "none", shape: "soft", sfx: "soft" },
   bonus: "", avatar: null, room: null, stats: BLANK_STATS,
 };
 
@@ -6273,6 +7384,9 @@ export default function App() {
   const [savedAt, setSavedAt] = useState(0);
   const [pending, setPending] = useState(null);
   const [dblArmed, setDblArmed] = useState(false);
+  const [tab, setTab] = useState("home");
+  const [note, setNote] = useState(null);
+  const [hunt, setHunt] = useState("");
   const music = useMusic();
 
   const deck = decks.find((d) => d.id === deckId) || decks[0];
@@ -6388,7 +7502,10 @@ export default function App() {
   const saveDecks = (list) => { setDecks(list); persist(list, null); };
   const saveProg = (p) => { setProg(p); persist(null, p); };
 
-  const say = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2600); };
+  const say = (msg, action) => {
+    setToast({ msg, action });
+    setTimeout(() => setToast((t) => (t && t.msg === msg ? null : t)), action ? 7000 : 2600);
+  };
 
 
   const addDeck = (d) => {
@@ -6398,10 +7515,12 @@ export default function App() {
   };
 
   const removeDeck = (id) => {
+    const gone = decks.find((d) => d.id === id);
     const next = decks.filter((d) => d.id !== id);
     const safe = next.length ? next : STARTER_DECKS;
     saveDecks(safe);
     if (deckId === id) setDeckId(safe[0].id);
+    if (gone) say(`${gone.title} deleted`, () => { saveDecks([...safe.filter((d) => d.id !== gone.id), gone]); setDeckId(gone.id); });
   };
 
   const saveEdited = (edited) => {
@@ -6465,6 +7584,49 @@ export default function App() {
     saveProg({ ...prog, coins: prog.coins + c.coins, week: { ...wk, claimed: [...(wk.claimed || []), c.id] } });
     playSfx(sfx, "coin");
     say(`${c.name} — ${c.coins} coins`);
+  };
+
+  const unlockPro = (how) => {
+    if (prog.pro) return;
+    if (how === "tickets") {
+      if ((prog.tickets || 0) < PRO_TICKETS) return;
+      saveProg({ ...prog, pro: true, tickets: prog.tickets - PRO_TICKETS });
+    } else {
+      if (prog.coins < PRO_COINS) return;
+      saveProg({ ...prog, pro: true, coins: prog.coins - PRO_COINS });
+    }
+    playSfx(sfx, "level");
+    say("Lecture recorder unlocked");
+  };
+
+  const saveNote = (n) => {
+    const entry = { ...n, id: "n" + Date.now(), date: new Date().toLocaleDateString() };
+    saveProg({ ...prog, notes: [entry, ...(prog.notes || [])].slice(0, 40) });
+    say("Notes saved");
+    setNote(entry);
+    setScreen("note");
+  };
+
+  const deckFromText = async (text, title) => {
+    setScreen("decks");
+    say("Building a deck from that…");
+    try {
+      const all = [];
+      for (let p = 0; p < PARTS.length; p++) {
+        const got = await askForCards({ kind: "text", data: text }, PARTS[p], all.map((c) => c.t));
+        for (const c of got) if (!all.some((x) => norm(x.t) === norm(c.t))) all.push(c);
+      }
+      const cards = all.length >= 4 ? all : localCards(text);
+      if (!cards.length) { say("Couldn't find clear terms in that one."); return; }
+      addDeck({ id: "d" + Date.now(), title: (title || "From a lecture").slice(0, 60), note: `${cards.length} cards`, cards });
+      say(`${cards.length} cards added`);
+    } catch (e) {
+      const cards = localCards(text);
+      if (cards.length) {
+        addDeck({ id: "d" + Date.now(), title: (title || "From a lecture").slice(0, 60), note: `${cards.length} cards`, cards });
+        say(`${cards.length} cards added without Claude`);
+      } else say("Couldn't build a deck from that.");
+    }
   };
 
   const buyPower = (p) => {
@@ -6553,6 +7715,15 @@ export default function App() {
       },
     };
 
+    const d = dayOf(prog);
+    nextProg.daily = {
+      ...d,
+      day: todayStr(),
+      cards: d.cards + seen.length,
+      rounds: d.rounds + 1,
+      fixed: d.fixed + r.missed.length,
+    };
+
     // exam countdown: count cards that reached level 4 today
     const newlyReady = levelUps.filter((u) => u.to >= 4 && u.from < 4).length;
     if (deck.exam && newlyReady) {
@@ -6583,6 +7754,10 @@ export default function App() {
     }
 
     saveProg(nextProg);
+    if (boardOn() && (r.score || 0) > (prog.best[k] || 0)) {
+      try { window.RECALL_SCORES.submit(mode, r.score || 0, me ? me.name : "Anon", deck.title); } catch (e) {}
+    }
+
     setEarned(coins);
     setResult(r);
     setScreen(r.cutscene ? "cutscene" : "results");
@@ -6622,51 +7797,73 @@ export default function App() {
       <style>{CSS}</style>
       <style>{EXTRA_CSS}</style>
 
-      {screen !== "boot" && screen !== "profiles" && screen !== "create" && (
-        <div className="nav">
-          <div className="mx-auto px-4 py-3 flex items-center justify-between gap-3" style={{ maxWidth: 880 }}>
-            <button onClick={() => setScreen("home")} className="disp" style={{ fontSize: 22 }}>Recall</button>
-            <div className="flex items-center gap-2">
-              <span className="pill rounded-full px-3 py-1 coin">{(prog.coins || 0).toLocaleString()}</span>
-              <span className="pill rounded-full px-3 py-1 ticket">{prog.tickets || 0}🎟</span>
-              <button onClick={() => setMenuOpen(!menuOpen)} className={"btn rounded-lg px-3 py-1 text-sm " + (alerts ? "eq" : "")}>
-                {menuOpen ? "Close" : "Menu"}{alerts ? ` · ${alerts}` : ""}
-              </button>
+      {NAV_SCREENS.includes(screen) && menuOpen && (
+        <>
+          <div onClick={() => setMenuOpen(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 54 }} />
+          <div className="sheet fadein">
+            <div className="sheetinner">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {[
+                  { id: "notes", label: "Notes", note: prog.pro ? `${(prog.notes || []).length} saved` : "Record a lecture" },
+                  { id: "goals", label: "Goals", note: examSoon || "Exams and challenges" },
+                  { id: "mastery", label: "Mastery", note: tWaiting ? `${tWaiting} tickets ready` : "Decks and achievements" },
+                  { id: "tasks", label: "Tasks", note: ready ? `${ready} ready` : "Coin goals" },
+                  { id: "pass", label: "Study pass", note: `Tier ${pass.tier}` },
+
+                  { id: "board", label: "Leaderboard", note: boardOn() ? "See where you rank" : "Needs accounts" },
+                  { id: "codes", label: "Codes", note: "Redeem something" },
+                  { id: "settings", label: "Settings", note: aiReady() ? "Claude connected" : "Connect Claude" },
+                  { id: "account", label: me ? me.name : "Account", note: storageOk ? "Saved on this device" : "Saving blocked" },
+                ].map((b) => (
+                  <button key={b.id}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setScreen(b.id);
+                    }}
+                    className="btn rounded-xl p-3 text-left">
+                    <div className="font-semibold" style={{ fontSize: 14 }}>{b.label}</div>
+                    <div className="dim text-xs mt-1">{b.note}</div>
+                  </button>
+                ))}
+                <button onClick={() => { setMenuOpen(false); setMusicOpen(!musicOpen); }} className="btn rounded-xl p-3 text-left">
+                  <div className="font-semibold" style={{ fontSize: 14 }}>Sound{music.station ? " · on" : ""}</div>
+                  <div className="dim text-xs mt-1">Music and volume</div>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
-      {menuOpen && screen !== "boot" && screen !== "profiles" && screen !== "create" && (
-        <div className="mx-auto px-4 pt-4" style={{ maxWidth: 880 }}>
-          <div className="panel rounded-2xl p-3 fadein">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      {NAV_SCREENS.includes(screen) && (
+        <div className="dockwrap">
+          <div className="wallet">
+            <span className="wpill wcoin"><i>◎</i>{(prog.coins || 0).toLocaleString()}</span>
+            <span className="wpill wtick"><i>✦</i>{prog.tickets || 0}</span>
+            <span className="wpill wfire"><i>▲</i>{prog.streak.days}d</span>
+          </div>
+          <div className="tabbar">
+            <div className="tabinner">
               {[
-                { id: "char", label: "Character", note: "Look and outfit" },
-                { id: "room", label: "Room", note: "Furniture and lights" },
-                { id: "mastery", label: "Mastery", note: ticketsWaiting(prog, decks) ? `${ticketsWaiting(prog, decks)} tickets ready` : "Decks and achievements" },
-                { id: "goals", label: "Goals", note: examSoon ? `${examSoon}` : weeklyReady(prog) ? `${weeklyReady(prog)} challenge ready` : "Exams and challenges" },
-                { id: "tasks", label: "Tasks", note: ready ? `${ready} ready` : "Coin goals" },
-                { id: "pass", label: "Study pass", note: `Tier ${pass.tier}` },
-                { id: "shop", label: "Shop", note: "Themes and sound" },
-                { id: "codes", label: "Codes", note: "Redeem something" },
-                { id: "settings", label: "Settings", note: aiReady() ? "Claude connected" : "Connect Claude" },
-              ].map((b) => (
-                <button key={b.id} onClick={() => { setScreen(b.id); setMenuOpen(false); }} className="btn rounded-xl p-3 text-left">
-                  <div className="font-semibold" style={{ fontSize: 15 }}>{b.label}</div>
-                  <div className="dim text-xs mt-1">{b.note}</div>
+                ["home", "Home", "\u2302"],
+                ["decks", "Decks", "\u25A4"],
+                ["study", "Study", "\u25B6"],
+                ["char", "You", "\u263A"],
+                ["room", "Room", "\u25F0"],
+                ["shop", "Shop", "\u25C6"],
+              ].map(([id, label, glyph]) => (
+                <button
+                  key={id}
+                  onClick={() => { setMenuOpen(false); setScreen(id); }}
+                  className={"tab" + (screen === id ? " on" : "")}
+                >
+                  <em>{glyph}</em>
+                  {label}
+                  {id === "study" && due > 0 && <span className="dot" style={{ background: "var(--a3)" }} />}
+                  {id === "shop" && alerts > 0 && <span className="dot" />}
                 </button>
               ))}
-            </div>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <button onClick={() => { setMusicOpen(!musicOpen); setMenuOpen(false); }} className="btn rounded-xl p-3 text-left">
-                <div className="font-semibold" style={{ fontSize: 15 }}>Sound{music.station ? " · on" : ""}</div>
-                <div className="dim text-xs mt-1">Music and volume</div>
-              </button>
-              <button onClick={() => { setScreen("account"); setMenuOpen(false); }} className="btn rounded-xl p-3 text-left">
-                <div className="font-semibold" style={{ fontSize: 15 }}>{me ? me.name : "Account"}</div>
-                <div className="dim text-xs mt-1">{storageOk ? "Saved on this device" : "Saving is blocked"}</div>
-              </button>
             </div>
           </div>
         </div>
@@ -6674,14 +7871,30 @@ export default function App() {
 
       {toast && (
         <div className="fadein" style={{ position: "fixed", left: 0, right: 0, bottom: 18, display: "flex", justifyContent: "center", zIndex: 40, pointerEvents: "none" }}>
-          <div className="panel2 rounded-full px-5 py-2" style={{ boxShadow: "0 8px 30px rgba(0,0,0,0.35)" }}>{toast}</div>
+          <div className="panel2 rounded-full px-5 py-2 flex items-center gap-3"
+            style={{ boxShadow: "0 8px 30px rgba(0,0,0,0.35)", pointerEvents: "auto" }}>
+            <span>{toast.msg}</span>
+            {toast.action && (
+              <button onClick={() => { toast.action(); setToast(null); }}
+                className="btn-go rounded-full px-3 py-1 text-sm">Undo</button>
+            )}
+          </div>
         </div>
       )}
 
-      <div className="mx-auto px-4 py-6" style={{ maxWidth: 880 }}>
+      {NAV_SCREENS.includes(screen) && (
+        <button onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu"
+          className={"menubtn" + (menuOpen ? " open" : "")}>
+          <span className="bars"><i /><i /><i /></span>
+          {alerts > 0 && !menuOpen && <span className="dot" />}
+        </button>
+      )}
+
+      <div className="mx-auto px-4 py-6" style={{ maxWidth: 880, paddingBottom: NAV_SCREENS.includes(screen) ? 150 : 24 }}>
         {musicOpen && screen !== "boot" && screen !== "profiles" && screen !== "create" && (
           <MusicPanel music={music} prog={prog} onClose={() => setMusicOpen(false)} />
         )}
+        {NAV_SCREENS.includes(screen) && <div style={{ height: 4 }} />}
 
         {screen === "boot" && (
           <Intro terms={SAMPLE_TERMS} onDone={() => setScreen(me ? (prog.avatar ? "home" : "create") : "profiles")} />
@@ -6706,6 +7919,29 @@ export default function App() {
 
         {screen === "settings" && <Settings onQuit={() => setScreen("home")} />}
 
+        {screen === "record" && (
+          <Recorder prog={prog} onSave={saveNote} onDeck={deckFromText} onUnlock={unlockPro}
+            onQuit={() => setScreen("notes")} />
+        )}
+
+        {screen === "notes" && (
+          <Notes prog={prog} onRecord={() => setScreen("record")} onDeck={deckFromText}
+            onOpen={(n) => { setNote(n); setScreen("note"); }}
+            onDelete={(id) => {
+              const gone = (prog.notes || []).find((x) => x.id === id);
+              const kept = (prog.notes || []).filter((x) => x.id !== id);
+              saveProg({ ...prog, notes: kept });
+              if (gone) say("Note deleted", () => saveProg({ ...prog, notes: [gone, ...kept] }));
+            }}
+            onQuit={() => setScreen("home")} />
+        )}
+
+        {screen === "note" && note && (
+          <NoteView note={note} onDeck={deckFromText} onQuit={() => setScreen("notes")} />
+        )}
+
+        {screen === "board" && <Board prog={prog} onQuit={() => setScreen("home")} />}
+
         {screen === "codes" && (
           <Codes prog={prog} onQuit={() => setScreen("home")}
             onRedeem={(v) => { const res = redeem(prog, v); if (res.ok) { saveProg(res.next); playSfx(sfx, "level"); } return res; }} />
@@ -6720,142 +7956,236 @@ export default function App() {
           />
         )}
 
+        {screen === "connect" && (
+          <div>
+            <h1 className="mb-2" style={{ fontSize: "clamp(28px,6vw,44px)" }}>One last thing</h1>
+            <p className="dim mb-5" style={{ maxWidth: "52ch", lineHeight: 1.5 }}>
+              Recall can read your PDFs and explain what you got wrong, which needs an API key.
+              You can skip this — uploads still work, they're just rougher.
+            </p>
+            <Settings onQuit={() => setScreen("home")} />
+            <button onClick={() => setScreen("home")} className="btn rounded-xl py-3 w-full mt-3">Skip for now</button>
+          </div>
+        )}
+
         {screen === "create" && loaded && (
           <CharStudio prog={prog} firstRun onBuy={buy}
             onSave={(a) => {
               const next = { ...prog, avatar: a, room: prog.room || DEFAULT_ROOM };
               saveProg(next);
               if (me) { const p = { ...me, avatar: a }; setMe(p); const l = profiles.map((x) => (x.id === p.id ? p : x)); setProfiles(l); saveProfiles(l); }
-              setScreen("home");
+              setScreen(aiReady() ? "home" : "connect");
               say("Saved. It'll be here next time.");
             }}
             onQuit={() => setScreen("home")} />
         )}
 
         {screen === "home" && (
-          <div>
-            <div className="rounded-2xl overflow-hidden mb-3" style={{ border: "1px solid var(--line)", position: "relative" }}>
-              <Room r={prog.room} glow="var(--a4)" due={due} score={bestFor("quiz")} trophies={decks.filter((d) => masteryPct(prog, d) >= 100).length} />
-              <div style={{ position: "absolute", left: "7%", bottom: "2%", width: "15%" }}>
-                <Avatar a={prog.avatar} fluid />
-              </div>
-            </div>
-            {titleOf(prog.avatar) && (
-              <div className="mb-2" style={{ fontSize: 15 }}>
-                <span className="dim text-sm">Currently going by </span>
-                <span className="disp" style={{ color: "var(--a1)" }}>{titleOf(prog.avatar)}</span>
-              </div>
-            )}
-            <div className="flex flex-wrap gap-2 mb-6">
-              <button onClick={() => setScreen("char")} className="btn rounded-lg px-3 py-2 text-sm">Character</button>
-              <button onClick={() => setScreen("room")} className="btn rounded-lg px-3 py-2 text-sm">Decorate</button>
-              {ready > 0 && <button onClick={() => setScreen("tasks")} className="btn-go rounded-lg px-3 py-2 text-sm">{ready} reward{ready === 1 ? "" : "s"} waiting</button>}
+          <div className="fadein">
+            <div className="greet">
+              <div className="dim" style={{ fontSize: 13 }}>{greeting()}</div>
+              <div className="disp" style={{ fontSize: 28, lineHeight: 1.1 }}>{me ? me.name : "Ready when you are"}</div>
             </div>
 
-            {dailyOn && <DailyCard prog={prog} onClaim={takeDaily} />}
+            <button onClick={() => setScreen("room")} className="roomcard mb-5">
+              <Room r={prog.room} glow="var(--a4)" due={due} score={bestFor("quiz")}
+                trophies={decks.filter((d) => masteryPct(prog, d) >= 100).length} />
+              <span className="roomme"><Avatar a={prog.avatar} fluid /></span>
+              <span className="roomtag">Your room · tap to decorate</span>
+            </button>
+
+            <div className="strip2 mb-5">
+              <div className="s2">
+                <b style={{ color: "var(--a2)" }}>{prog.streak.days}</b>
+                <span>day streak</span>
+              </div>
+              <div className="s2">
+                <b style={{ color: "var(--a3)" }}>{pass.into}<small>/{pass.need}</small></b>
+                <span>XP · tier {pass.tier}</span>
+              </div>
+              <div className="s2">
+                <b className="coin">{(prog.coins || 0).toLocaleString()}</b>
+                <span>coins</span>
+              </div>
+            </div>
 
             {plan ? (
-              <div className={"panel rounded-2xl p-5 mb-4" + pat + shape}>
-                <div className="flex items-end justify-between gap-4 mb-3">
-                  <div>
-                    <div className="disp" style={{ fontSize: 40 }}>
-                      {plan.left < 0 ? "Past" : plan.left === 0 ? "Today" : plan.left}
-                    </div>
-                    <div className="dim text-sm">{plan.left > 0 ? `days until ${deck.title}` : "exam day"}</div>
-                  </div>
-                  <div className="text-right">
-                    <div style={{ fontSize: 15 }}>
-                      {plan.done ? "Today's target hit ✓" : `${plan.todayCount} / ${plan.perDay} today`}
-                    </div>
-                    <div className="dim text-sm">{plan.ready} of {plan.total} ready</div>
-                  </div>
+              <button onClick={() => setScreen("goals")} className="hero w-full text-left mb-4">
+                <div className="disp" style={{ fontSize: 44, lineHeight: 1 }}>
+                  {plan.left < 0 ? "Past" : plan.left === 0 ? "Today" : plan.left}
+                  {plan.left > 0 && <span style={{ fontSize: 20, marginLeft: 6 }}>day{plan.left === 1 ? "" : "s"}</span>}
                 </div>
-                <div className="meter mb-2"><i style={{ width: `${(plan.ready / Math.max(1, plan.total)) * 100}%` }} /></div>
-                <button onClick={() => setScreen("goals")} className="dim text-xs">Change the date</button>
-              </div>
+                <div style={{ opacity: .85, marginTop: 4 }}>until {deck.title}</div>
+                <div style={{ fontSize: 13, opacity: .7, marginTop: 10 }}>
+                  {plan.done ? "Today's target is done. Nice." : `${plan.todayCount} of ${plan.perDay} locked in today`}
+                </div>
+                <div className="meter" style={{ marginTop: 10, background: "rgba(0,0,0,.3)" }}>
+                  <i style={{ width: `${(plan.ready / Math.max(1, plan.total)) * 100}%` }} />
+                </div>
+              </button>
             ) : (
-              <div className={"panel rounded-2xl p-5 mb-4" + pat + shape}>
-                <div className="flex items-end justify-between gap-4 mb-3">
-                  <div>
-                    <div className="disp" style={{ fontSize: 34 }}>{mast}%</div>
-                    <div className="dim text-sm">of {deck.title} locked in</div>
-                  </div>
-                  <div className="text-right">
-                    <div style={{ fontSize: 15 }}>{due} due now</div>
-                    <div className="dim text-sm">
-                      {prog.streak.days > 0 ? `${prog.streak.days} day streak · ${streakMult(prog.streak.days)}×` : "first day"}
-                    </div>
-                  </div>
+              <button onClick={() => setScreen("goals")} className="hero w-full text-left mb-4">
+                <div className="disp" style={{ fontSize: 40, lineHeight: 1 }}>{mast}%</div>
+                <div style={{ opacity: .85, marginTop: 4 }}>of {deck.title} locked in</div>
+                <div style={{ fontSize: 13, opacity: .7, marginTop: 10 }}>
+                  Got an exam coming? Set a date and I'll pace it for you.
                 </div>
-                <div className="meter mb-3"><i style={{ width: `${mast}%` }} /></div>
-                <button onClick={() => setScreen("goals")} className="dim text-xs">Studying for something? Set an exam date</button>
-              </div>
+                <div className="meter" style={{ marginTop: 10, background: "rgba(0,0,0,.3)" }}>
+                  <i style={{ width: `${mast}%` }} />
+                </div>
+              </button>
             )}
 
-            <button onClick={() => setScreen("pass")} className={"btn rounded-2xl p-4 w-full text-left mb-4" + shape}>
-              <div className="flex items-baseline justify-between gap-2 mb-2">
-                <span className="font-semibold">Study pass · tier {pass.tier}</span>
+            <div className="card2 p-4 mb-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-semibold">Today's goals</span>
+                <span className="dim text-sm">{goalsDone(prog)}/3</span>
+              </div>
+              {todayGoals(prog).map((g) => {
+                const done = g.have >= g.goal;
+                return (
+                  <div key={g.id} className="goal">
+                    <span className={"tick" + (done ? " on" : "")}>{done ? "✓" : ""}</span>
+                    <span style={{ flex: 1, fontSize: 15 }}>{g.name}</span>
+                    <span className="dim text-sm">{g.have} / {g.goal}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <button onClick={() => start("quiz")} className="card2 p-4 text-left">
+                <div className="disp" style={{ fontSize: 26 }}>{due}</div>
+                <div className="dim text-sm mt-1">cards ready</div>
+              </button>
+              <button onClick={() => (dailyOn ? takeDaily() : setScreen("tasks"))} className="card2 p-4 text-left">
+                <div className="disp" style={{ fontSize: 18, color: dailyOn ? "var(--a1)" : undefined }}>
+                  {dailyOn ? "Daily reward" : `${ready} tasks`}
+                </div>
+                <div className="dim text-sm mt-1">{dailyOn ? "ready to claim" : "on the go"}</div>
+              </button>
+            </div>
+
+            <button onClick={() => setScreen("pass")} className="card2 p-4 w-full text-left mb-4">
+              <div className="flex items-baseline justify-between mb-2">
+                <span className="font-semibold">Study pass · Tier {pass.tier}</span>
                 <span className="dim text-sm">{pass.into} / {pass.need} XP</span>
               </div>
               <div className="xpbar"><i style={{ width: `${(pass.into / pass.need) * 100}%` }} /></div>
               <div className="dim text-xs mt-2">
-                Next up: {(() => { const r = tierReward(pass.tier + 1); return r.kind === "item" ? r.name : `${r.amount} ${r.kind}`; })()}
+                Next: {(() => { const r = tierReward(pass.tier + 1); return r.kind === "item" ? r.name : `${r.amount} ${r.kind}`; })()}
               </div>
             </button>
 
-            {holdOf(prog, "double") > 0 && (
-              <button onClick={() => setDblArmed(!dblArmed)}
-                className={"btn rounded-2xl p-4 w-full text-left mb-4" + shape + (dblArmed ? " eq" : "")}>
-                <div className="font-semibold">Double coins {dblArmed ? "· armed for the next round" : "· tap to arm"}</div>
-                <div className="dim text-sm mt-1">You hold {holdOf(prog, "double")}</div>
-              </button>
-            )}
-
             {trouble.length >= 3 && (
-              <button onClick={() => start("quiz", trouble)} className={"btn rounded-2xl p-4 w-full text-left mb-6" + shape}>
+              <button onClick={() => start("quiz", trouble)} className="card2 p-4 w-full text-left mb-4">
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <div className="font-semibold">{trouble.length} trouble cards</div>
-                    <div className="dim text-sm mt-1">The ones you keep missing. Drill them with explanations on.</div>
+                    <div className="dim text-sm mt-1">The ones you keep missing</div>
                   </div>
                   <span className="badge">{trouble.length}</span>
                 </div>
               </button>
             )}
 
-            <h2 className="mb-1" style={{ fontSize: 22 }}>Your decks</h2>
-            <p className="dim text-sm mb-3">Swipe the arrows and pick the one you're studying.</p>
-            <div className="mb-7">
-              <DeckPicker
-                decks={decks} deckId={deckId} prog={prog}
-                onSelect={setDeckId} onNew={newDeck}
-                onEdit={() => setScreen("editor")} onRemove={removeDeck}
-              />
+            <div className="dim text-sm mb-2">Active deck</div>
+            <button onClick={() => setScreen("decks")} className="card2 p-4 w-full text-left mb-4 flex items-center gap-3">
+              <div style={{ width: 54, flexShrink: 0 }}><Avatar a={prog.avatar} fluid /></div>
+              <div style={{ flex: 1 }}>
+                <div className="font-semibold" style={{ fontSize: 16 }}>{deck.title}</div>
+                <div className="dim text-sm mt-1">{deck.cards.length} cards · {due} due · {mast}% mastered</div>
+              </div>
+              <span className="dim">›</span>
+            </button>
+
+            <button onClick={() => setScreen("study")} className="bigbtn mb-6">Start studying</button>
+          </div>
+        )}
+
+        {screen === "decks" && (
+          <div className="fadein">
+            <PageHead eyebrow="Library" title="Your decks"
+              sub={`${decks.length} deck${decks.length === 1 ? "" : "s"} · ${decks.reduce((a, d) => a + d.cards.length, 0)} cards in total`} />
+            <div className="mb-8">
+              <DeckPicker decks={decks} deckId={deckId} prog={prog} onSelect={setDeckId}
+                onNew={newDeck} onEdit={() => setScreen("editor")} onRemove={removeDeck} />
             </div>
+            <div className="rule my-6" />
+            <h2 className="mb-1" style={{ fontSize: 20 }}>Find a card</h2>
+            <p className="dim text-sm mb-3">Searches every deck you have.</p>
+            <input value={hunt} onChange={(e) => setHunt(e.target.value)}
+              placeholder="Type a term or part of a definition"
+              className="field rounded-xl px-4 py-3 w-full mb-3" />
+            {hunt.trim().length > 1 && (
+              <div className="flex flex-col gap-2 mb-8">
+                {(() => {
+                  const q = hunt.trim().toLowerCase();
+                  const hits = [];
+                  decks.forEach((d) => d.cards.forEach((c) => {
+                    if (hits.length < 12 && (c.t + " " + c.d).toLowerCase().includes(q)) hits.push({ c, d });
+                  }));
+                  if (!hits.length) return <div className="card2 p-4 dim">Nothing matches that.</div>;
+                  return hits.map((h, n) => (
+                    <button key={n} onClick={() => { setDeckId(h.d.id); start("cards", [h.c], h.d); }}
+                      className="card2 p-3 text-left">
+                      <div className="font-semibold" style={{ fontSize: 15 }}>{h.c.t}</div>
+                      <div className="dim text-sm mt-1" style={{ lineHeight: 1.4 }}>{h.c.d}</div>
+                      <div className="dim text-xs mt-2">
+                        {h.d.title} · level {recOf(prog, h.d.id, h.c).lvl}/5
+                      </div>
+                    </button>
+                  ));
+                })()}
+              </div>
+            )}
+
+            <div className="rule my-6" />
+            <h2 className="mb-3" style={{ fontSize: 20 }}>Add material</h2>
+            <Builder onBuilt={addDeck} onManual={newDeck} onSettings={() => setScreen("settings")} />
+          </div>
+        )}
+
+        {screen === "study" && (
+          <div className="fadein">
+            <PageHead eyebrow={deck.title} title="Study" sub={`${due} due now · ${mast}% mastered`} />
 
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="dim text-sm">Round</span>
               {LENGTHS.map((n) => (
-                <button key={n} onClick={() => setLen(n)} className={"chip rounded-full px-3 py-1 text-sm " + (len === n ? "chip-on" : "")}>
+                <button key={n} onClick={() => setLen(n)}
+                  className={"chip rounded-full px-3 py-1 text-sm " + (len === n ? "chip-on" : "")}>
                   {n === 0 ? `All ${deck.cards.length}` : `${n} cards`}
                 </button>
               ))}
             </div>
-            <div className="flex flex-wrap items-center gap-2 mb-5">
+            <div className="flex flex-wrap items-center gap-2 mb-6">
               <span className="dim text-sm">Cards</span>
               <button onClick={() => setOrder("smart")} className={"chip rounded-full px-3 py-1 text-sm " + (order === "smart" ? "chip-on" : "")}>Weakest first</button>
               <button onClick={() => setOrder("random")} className={"chip rounded-full px-3 py-1 text-sm " + (order === "random" ? "chip-on" : "")}>Random</button>
             </div>
 
+            <button onClick={() => setScreen(prog.pro ? "record" : "record")} className="card2 p-4 w-full text-left mb-7">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="font-semibold" style={{ fontSize: 16 }}>
+                    Record a lecture {!prog.pro && <span className="pill rounded-full px-2 py-1 ml-1" style={{ color: "var(--a1)" }}>Pro</span>}
+                  </div>
+                  <div className="dim text-sm mt-1">Listens in class, writes the notes, builds the deck</div>
+                </div>
+                <span style={{ fontSize: 22 }}>●</span>
+              </div>
+            </button>
+
             {MODE_GROUPS.map((g) => (
               <div key={g.id} className="mb-7">
-                <h2 style={{ fontSize: 20 }}>{g.name}</h2>
+                <h2 style={{ fontSize: 19 }}>{g.name}</h2>
                 <p className="dim text-sm mb-3">{g.note}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {g.modes.map((m) => (
-                    <button key={m.id} onClick={() => start(m.id)} className={"btn rounded-2xl p-4 text-left" + shape}>
+                    <button key={m.id} onClick={() => start(m.id)} className="card2 p-4 text-left">
                       <div className="flex items-baseline justify-between gap-2">
-                        <span className="disp" style={{ fontSize: 22 }}>{m.name}</span>
+                        <span className="disp" style={{ fontSize: 21 }}>{m.name}</span>
                         {bestFor(m.id) > 0 && <span className="dim text-xs">{bestFor(m.id).toLocaleString()}</span>}
                       </div>
                       <div className="dim text-sm mt-1" style={{ lineHeight: 1.4 }}>{m.blurb}</div>
@@ -6864,10 +8194,6 @@ export default function App() {
                 </div>
               </div>
             ))}
-
-            <div className="rule my-8" />
-            <h2 className="mb-3" style={{ fontSize: 22 }}>Add material</h2>
-            <Builder onBuilt={addDeck} onManual={newDeck} onSettings={() => setScreen("settings")} />
           </div>
         )}
 
@@ -6894,9 +8220,9 @@ export default function App() {
         {screen === "sort" && <Sort cards={playCards} sfx={sfx} onDone={finish} onQuit={() => setScreen("home")} />}
         {screen === "ladder" && <Ladder cards={playCards} pool={deck.cards} sfx={sfx} deckTitle={deck.title} onDone={finish} onQuit={() => setScreen("home")} />}
         {screen === "drift" && <Drift cards={playCards} onQuit={() => setScreen("home")} />}
-        {screen === "browse" && <Browse deck={deck} prog={prog} onFlag={flagCard} onQuit={() => setScreen("home")} />}
+        {screen === "browse" && <Browse deck={deck} prog={prog} onFlag={flagCard} onSettings={() => setScreen("settings")} onQuit={() => setScreen("home")} />}
         {screen === "tutor" && (
-          <Tutor deck={deck} onAsk={() => saveProg({ ...prog, stats: { ...prog.stats, asks: (prog.stats.asks || 0) + 1 } })} onQuit={() => setScreen("home")} />
+          <Tutor deck={deck} onSettings={() => setScreen("settings")} onAsk={() => saveProg({ ...prog, stats: { ...prog.stats, asks: (prog.stats.asks || 0) + 1 } })} onQuit={() => setScreen("home")} />
         )}
         {screen === "editor" && <Editor deck={deck} onSave={saveEdited} onQuit={() => setScreen("home")} />}
         {screen === "shop" && <Shop prog={prog} onBuy={buy} onEquip={equip} music={music} onPower={buyPower} onFreeze={() => { if (prog.coins < 1200) return; saveProg({ ...prog, coins: prog.coins - 1200, freezes: (prog.freezes || 0) + 1 }); playSfx(sfx, "coin"); say("Streak freeze bought"); }} onQuit={() => setScreen("home")} />}
@@ -6907,12 +8233,14 @@ export default function App() {
           <CharStudio prog={prog} onBuy={buy} onSave={(a) => {
             saveProg({ ...prog, avatar: a });
             if (me) { const p = { ...me, avatar: a }; setMe(p); const l = profiles.map((x) => (x.id === p.id ? p : x)); setProfiles(l); saveProfiles(l); }
-            setScreen("home");
+            say("Look saved");
           }} onQuit={() => setScreen("home")} />
         )}
+
         {screen === "room" && (
           <RoomStudio prog={prog} due={due} score={bestFor("quiz")} onBuy={buy}
-            onSave={(r) => { saveProg({ ...prog, room: r }); setScreen("home"); }} onQuit={() => setScreen("home")} />
+            onSave={(r) => { saveProg({ ...prog, room: r }); say("Room saved"); }}
+            onQuit={() => setScreen("home")} />
         )}
 
         {screen === "cutscene" && result && (
