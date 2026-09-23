@@ -120,4 +120,3 @@ everything by hand.
 **Sign-in email never arrives** — Supabase's built-in email sender is rate
 limited and lands in spam sometimes. For real usage, connect your own SMTP
 under Authentication → Emails.
- 

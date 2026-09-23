@@ -105,3 +105,39 @@ Anthropic console → Usage shows spend per day. Each deck build is three
 short calls; the Tutor and explanations are one each. If it ever climbs
 faster than you expect, lower the cap in Limits — it cuts off cleanly and
 the app falls back to building decks without AI.
+
+
+---
+
+## Optional: transcription that works on iPhone
+
+The recorder uses the browser's own speech engine by default. That's free
+but only reliable on Chrome and Edge. To make it work everywhere, add a
+transcription service and the app gains an "Upload" mode that records
+audio and sends it up in chunks.
+
+1. Sign up at **deepgram.com** — they give you $200 of free credit, which
+   is thousands of lectures.
+2. Copy your API key.
+3. Vercel → Settings → Environment Variables → `DEEPGRAM_API_KEY` → Save.
+4. Redeploy.
+
+Cost after the free credit is about $0.0043 a minute, so an hour-long
+lecture runs about 26 cents. The endpoint caps segment size and rate limits
+to 30 uploads a minute per person.
+
+If you skip this, nothing breaks — the Upload option just reports that
+transcription isn't set up, and Live still works on laptops.
+
+---
+
+## Optional: the leaderboard
+
+It rides on the Supabase accounts above. If you've done that step, paste
+the rest of `schema.sql` (the `scores` table at the bottom) into the SQL
+editor and redeploy.
+
+Each person gets one row per mode — their personal best — so the table
+stays small no matter how much people play. Everyone can read it, nobody
+can write anyone else's row. Without Supabase, the Leaderboard entry
+explains it needs accounts and nothing else changes.
