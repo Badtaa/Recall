@@ -7413,6 +7413,8 @@ export default function App() {
   const [savedAt, setSavedAt] = useState(0);
   const [pending, setPending] = useState(null);
   const [dblArmed, setDblArmed] = useState(false);
+  const booting = useRef(true);
+  const nextScreen = useRef(null);
   const [tab, setTab] = useState("home");
   const [note, setNote] = useState(null);
   const [hunt, setHunt] = useState("");
@@ -7437,7 +7439,7 @@ export default function App() {
       if (list.length && last && list.some((p) => p.id === last)) {
         const p = list.find((x) => x.id === last);
         if (!p.pin) openProfile(p);
-        else setPending(p);
+        else { setPending(p); goOrHold("profiles"); }
       }
     })();
     const id = setInterval(() => setNow(Date.now()), 30000);
@@ -7458,6 +7460,11 @@ export default function App() {
     return rollWeek(touchStreak(base));
   };
 
+  const goOrHold = (target) => {
+    if (booting.current) nextScreen.current = target;
+    else setScreen(target);
+  };
+
   const openProfile = async (p) => {
     const data = await storeGet(saveKeyFor(p.id));
     const saved = (data && data.decks) || [];
@@ -7468,7 +7475,7 @@ export default function App() {
     setProg(hydrated);
     setMe(p);
     await storeSet(LAST_KEY, p.id);
-    setScreen(hydrated.avatar ? "home" : "create");
+    goOrHold(hydrated.avatar ? "home" : "create");
   };
 
   const createProfile = async (name, pin) => {
@@ -7926,7 +7933,10 @@ export default function App() {
         {NAV_SCREENS.includes(screen) && <div style={{ height: 4 }} />}
 
         {screen === "boot" && (
-          <Intro terms={SAMPLE_TERMS} onDone={() => setScreen(me ? (prog.avatar ? "home" : "create") : "profiles")} />
+          <Intro terms={SAMPLE_TERMS} onDone={() => {
+            booting.current = false;
+            setScreen(nextScreen.current || (me ? (prog.avatar ? "home" : "create") : "profiles"));
+          }} />
         )}
 
         {screen === "profiles" && (
