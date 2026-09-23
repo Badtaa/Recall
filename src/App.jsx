@@ -4603,11 +4603,16 @@ const INTRO_CSS = `
   animation:pop .5s cubic-bezier(.2,1.5,.4,1) both, twinkle 2.4s ease-in-out 1s infinite;}
 @keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.82)}}
 .itag{color:var(--dim);margin-top:16px;font-size:12px;letter-spacing:.24em;text-transform:uppercase;
-  font-weight:700;animation:titleIn .8s ease .75s both;}
+  font-weight:700;animation:titleIn .8s ease .25s both;}
 .iline{height:2px;width:0;margin:18px auto 0;border-radius:2px;
   background:linear-gradient(90deg,transparent,var(--a3),var(--a4),transparent);
-  box-shadow:0 0 18px var(--a3);animation:widen 1s cubic-bezier(.2,.9,.3,1) .5s both;}
-@keyframes widen{to{width:240px}}
+  box-shadow:0 0 18px var(--a3);animation:widen .9s cubic-bezier(.2,.9,.3,1) both;}
+@keyframes widen{to{width:250px}}
+.ibar{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.07);}
+.ibar > i{display:block;height:100%;width:0;
+  background:linear-gradient(90deg,var(--a3),var(--a4));
+  animation:fill 7.6s linear both;}
+@keyframes fill{to{width:100%}}
 .ibrack{position:absolute;width:26px;height:26px;border:2px solid var(--a3);opacity:.5;
   animation:brack .6s ease .1s both;}
 @keyframes brack{from{opacity:0;transform:scale(1.4)}to{opacity:.5;transform:none}}
@@ -4627,36 +4632,63 @@ function Intro({ terms, onDone }) {
   const [beat, setBeat] = useState(0);
   const done = useRef(onDone);
   done.current = onDone;
+
+  /* 0 cards arrive · 1 they flip · 2 they gather · 3 they scatter
+     4 the name lands · 5 the line and tagline */
   useEffect(() => {
-    const ts = [
-      setTimeout(() => setBeat(1), 1150),   /* cards flip to their terms */
-      setTimeout(() => setBeat(2), 2150),   /* cards sweep away */
-      setTimeout(() => setBeat(3), 2750),   /* wordmark, on its own */
-      setTimeout(() => done.current(), 4900),
-    ];
+    const marks = [900, 2100, 3300, 4100, 4600, 5600];
+    const ts = marks.map((ms, n) => setTimeout(() => setBeat(n + 1), ms));
+    ts.push(setTimeout(() => done.current(), 7600));
     return () => ts.forEach(clearTimeout);
   }, []);
 
-  const picks = useMemo(() => shuffle(terms && terms.length ? terms : SAMPLE_TERMS).slice(0, 4), [terms]);
+  const picks = useMemo(() => shuffle(terms && terms.length ? terms : SAMPLE_TERMS).slice(0, 5), [terms]);
   const lanes = [
-    { x: -196, y: -30, r: -10, d: 0 },
-    { x: -66, y: 16, r: -3, d: 0.1 },
-    { x: 66, y: 16, r: 3, d: 0.2 },
-    { x: 196, y: -30, r: 10, d: 0.3 },
+    { x: -250, y: -22, r: -13 },
+    { x: -126, y: 26, r: -6 },
+    { x: 0, y: -40, r: 0 },
+    { x: 126, y: 26, r: 6 },
+    { x: 250, y: -22, r: 13 },
   ];
   const letters = "Recall".split("");
+
+  const cardStyle = (n) => {
+    const lane = lanes[n];
+    if (beat >= 3) {
+      return {
+        transform: `translate(${lane.x * 2.6}px, ${lane.y - 150}px) rotate(${lane.r * 4}deg) scale(.7)`,
+        opacity: 0,
+        transition: "transform .75s cubic-bezier(.55,0,.8,.2), opacity .6s ease",
+        transitionDelay: `${n * 0.04}s`,
+      };
+    }
+    if (beat >= 2) {
+      return {
+        transform: `translate(${(n - 2) * 13}px, 0px) rotate(${(n - 2) * 3}deg) scale(1.04)`,
+        opacity: 1,
+        transition: "transform .8s cubic-bezier(.2,.9,.25,1)",
+        zIndex: 5 - Math.abs(n - 2),
+      };
+    }
+    return {
+      transform: `translate(${lane.x}px, ${lane.y}px) rotate(${lane.r}deg)`,
+      animation: `flyIn .9s cubic-bezier(.16,.9,.3,1.03) ${n * 0.16}s both`,
+      "--fx": `${lane.x * 2}px`, "--fy": "150px", "--fr": `${lane.r * 5}deg`,
+      transition: "transform .7s cubic-bezier(.2,.9,.3,1)",
+    };
+  };
 
   return (
     <div className="iwrap">
       <style>{INTRO_CSS}</style>
       <div className="ibg" />
 
-      {[...Array(9)].map((_, n) => (
+      {[...Array(11)].map((_, n) => (
         <span key={n} className="imote" style={{
-          left: `${8 + n * 10}%`, bottom: "22%",
+          left: `${5 + n * 9}%`, bottom: "20%",
           width: n % 3 === 0 ? 4 : 2.5, height: n % 3 === 0 ? 4 : 2.5,
           background: ["var(--a3)", "var(--a4)", "var(--a1)"][n % 3],
-          animationDuration: `${4.5 + (n % 4)}s`, animationDelay: `${n * 0.45}s`,
+          animationDuration: `${5 + (n % 4)}s`, animationDelay: `${n * 0.4}s`,
         }} />
       ))}
 
@@ -4668,47 +4700,44 @@ function Intro({ terms, onDone }) {
         }} />
       ))}
 
-      {beat < 3 && (
+      {beat < 4 && (
         <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {picks.map((c, n) => {
-            const gone = beat >= 2;
-            return (
-              <div key={c.t + n} className="icard" style={{
-                width: 140, minHeight: 176,
-                transform: gone
-                  ? `translate(${lanes[n].x * 2.4}px, ${lanes[n].y - 90}px) rotate(${lanes[n].r * 3}deg) scale(.82)`
-                  : `translate(${lanes[n].x}px, ${lanes[n].y}px) rotate(${lanes[n].r}deg)`,
-                animation: gone ? "none" : `flyIn .85s cubic-bezier(.16,.9,.3,1.03) ${lanes[n].d}s both`,
-                "--fx": `${lanes[n].x * 1.9}px`, "--fy": "130px", "--fr": `${lanes[n].r * 5}deg`,
-                opacity: gone ? 0 : 1,
-                transition: "transform .6s cubic-bezier(.5,0,.75,0), opacity .5s ease",
-                transitionDelay: `${n * 0.05}s`,
-                fontSize: 13,
+          {picks.map((c, n) => (
+            <div key={c.t + n} className="icard" style={{
+              width: 136, minHeight: 180, fontSize: 13, position: "absolute", ...cardStyle(n),
+            }}>
+              <span className={beat >= 1 ? "disp" : "dim"} style={{
+                fontSize: beat >= 1 ? 17 : 12.5,
+                transition: "font-size .3s ease",
               }}>
-                <span className={beat >= 1 ? "disp" : "dim"} style={{ fontSize: beat >= 1 ? 17 : 13 }}>
-                  {beat >= 1 ? c.t : c.d}
-                </span>
-              </div>
-            );
-          })}
+                {beat >= 1 ? c.t : c.d}
+              </span>
+            </div>
+          ))}
         </div>
       )}
 
-      {beat >= 3 && (
+      {beat >= 4 && (
         <div style={{ position: "relative", textAlign: "center", zIndex: 5 }}>
-          <div className="imark" style={{ fontSize: "clamp(62px,16vw,140px)", lineHeight: 1 }}>
+          <div className="imark" style={{ fontSize: "clamp(62px,16vw,142px)", lineHeight: 1 }}>
             {letters.map((ch, n) => (
-              <span key={n} className="iltr" style={{ animationDelay: `${n * 0.07}s` }}>{ch}</span>
+              <span key={n} className="iltr" style={{ animationDelay: `${n * 0.08}s` }}>{ch}</span>
             ))}
-            <span className="ispark" style={{ animationDelay: `${letters.length * 0.07 + 0.15}s` }}>✦</span>
+            <span className="ispark" style={{ animationDelay: `${letters.length * 0.08 + 0.2}s` }}>✦</span>
           </div>
-          <div className="iline" />
-          <div className="itag">Study · Play · Make it yours</div>
+          {beat >= 5 && (
+            <>
+              <div className="iline" />
+              <div className="itag">Study · Play · Make it yours</div>
+            </>
+          )}
         </div>
       )}
+
+      <div className="ibar"><i /></div>
 
       <button onClick={() => done.current()} className="dim text-sm"
-        style={{ position: "absolute", right: 16, bottom: 14, letterSpacing: ".06em" }}>Skip</button>
+        style={{ position: "absolute", right: 16, bottom: 18, letterSpacing: ".06em" }}>Skip</button>
     </div>
   );
 }
